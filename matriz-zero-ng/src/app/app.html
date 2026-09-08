@@ -38,6 +38,23 @@
   </div>
 </header>
 
+
+<nav class="navegador" [class.compacto]="navFija">
+  <div class="envoltura navegador-interior">
+    <span class="navegador-marca">Matriz Zero</span>
+    <ul>
+      @for (s of SECCIONES; track s.id) {
+        <li>
+          <a [href]="'#' + s.id" [class.activa]="seccionActiva === s.id"
+             (click)="irA($event, s.id)">
+            <b>{{ s.num }}</b><span>{{ s.titulo }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</nav>
+
 <div class="envoltura">
 
   <!-- Estado de carga y errores -->
@@ -100,7 +117,7 @@
   }
 
   <!-- PASO 1 (NUEVO): Resumen Gerencial y KPIs -->
-  <section class="paso">
+  <section class="paso" id="paso-1">
     <h2 class="s-indicadores"><span class="num">1.</span> Indicadores de Cumplimiento y Cobertura</h2>
     <span class="etiqueta-concepto t-verde">Indicadores de gestión</span>
 
@@ -137,7 +154,7 @@
   </section>
 
   <!-- PASO 2 (NUEVO): Desglose Matricial -->
-  <section class="paso">
+  <section class="paso" id="paso-2">
     <h2 class="s-matrices"><span class="num">2.</span> Desglose Matricial del Proceso</h2>
     <span class="etiqueta-concepto t-azul">Representación matricial</span>
     <span class="etiqueta-concepto t-azul">Resta de matrices</span>
@@ -252,7 +269,7 @@
   </section>
 
   <!-- PASO 3: Aplicaciones del Modelo -->
-  <section class="paso">
+  <section class="paso" id="paso-3">
     <h2 class="s-transformacion"><span class="num">3.</span> Aplicaciones del Modelo Matricial</h2>
     <span class="etiqueta-concepto t-terracota">Transformación lineal</span>
     <span class="etiqueta-concepto t-terracota">Multiplicación por escalar</span>
@@ -330,7 +347,7 @@
   </section>
 
   <!-- Comparación entre reponedores -->
-  <section class="paso">
+  <section class="paso" id="paso-4">
     <h2 class="s-comparacion"><span class="num">4.</span> Comparación entre Reponedores</h2>
     <span class="etiqueta-concepto t-verde">Aplicación del modelo</span>
 
@@ -377,7 +394,7 @@
   </section>
 
   <!-- PASO 4: Sistema de Ecuaciones Lineales -->
-  <section class="paso">
+  <section class="paso" id="paso-5">
     <h2 class="s-ecuaciones"><span class="num">5.</span> El Álgebra Matricial como Herramienta de Resolución</h2>
     <span class="etiqueta-concepto t-violeta">Sistema de ecuaciones</span>
     <span class="etiqueta-concepto t-violeta">Operaciones elementales</span>
@@ -434,7 +451,7 @@
   </section>
 
   <!-- Cierre: que se hizo y que se encontro -->
-  <section class="paso cierre">
+  <section class="paso cierre" id="paso-6">
     <h2 class="s-cierre"><span class="num">6.</span> Qué se hizo y qué se encontró</h2>
     <span class="etiqueta-concepto t-tinta">Resultados</span>
 

@@ -336,3 +336,86 @@
 
   strong { color: var(--tinta); }
 }
+
+/* --- Barra de navegación ---
+   Esto es una aplicación, no un documento: durante la defensa hay que poder
+   saltar a la sección que la pregunta pide, sin recorrer la página. */
+.navegador {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(248, 248, 245, .93);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--linea-fina);
+  transition: box-shadow .2s ease;
+
+  &.compacto { box-shadow: 0 1px 12px rgba(20, 48, 74, .09); }
+}
+
+.navegador-interior {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 52px;
+  overflow-x: auto;
+}
+
+.navegador-marca {
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .04em;
+  color: var(--tinta);
+  white-space: nowrap;
+}
+
+.navegador ul {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navegador a {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: var(--gris);
+  font-size: .84rem;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+
+  b { font-family: "IBM Plex Mono", monospace; font-size: .78rem; opacity: .6; }
+
+  &:hover { background: rgba(31, 82, 115, .07); color: var(--tinta); }
+
+  &.activa {
+    color: var(--tinta);
+    font-weight: 600;
+    background: rgba(31, 82, 115, .09);
+
+    b { opacity: 1; }
+  }
+}
+
+/* La portada arranca debajo de la barra, sin salto. */
+.portada { padding-top: 26px; }
+
+/* .envoltura lleva 160px de padding inferior para dar aire al final de la página.
+   La portada usa la misma clase, así que ese respiro caía como un hueco entre la
+   ficha del grupo y la barra de navegación. Acá se reduce. */
+.portada .envoltura { padding-bottom: 30px; }
+
+/* Al saltar a una sección, el título debe quedar debajo de la barra fija y no
+   detrás de ella: sin este margen el encabezado aterriza tapado. */
+.paso { scroll-margin-top: 70px; }
+
+@media (max-width: 760px) {
+  .navegador a span { display: none; }
+  .navegador-interior { gap: 12px; }
+}

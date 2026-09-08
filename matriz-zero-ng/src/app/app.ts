@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -63,7 +63,7 @@ interface MatrizResponse {
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App implements OnInit {
+export class App implements OnInit, AfterViewInit, OnDestroy {
   private readonly http = inject(HttpClient);
   // Angular 21 corre sin zone.js: las asignaciones hechas dentro de un subscribe no
   // disparan deteccion de cambios por si solas. Hay que pedirla explicitamente o la
@@ -116,6 +116,25 @@ export class App implements OnInit {
   k = 2; // Escalar para ponderación
   kE: number[][] = []; // Matriz ponderada k*E
 
+  // --- Navegación ---
+  // En una aplicación no se recorre la página de arriba abajo: se salta a la
+  // sección que la pregunta pide. La barra queda fija y marca dónde se está.
+  readonly SECCIONES = [
+    { id: 'paso-1', num: 1, titulo: 'Indicadores' },
+    { id: 'paso-2', num: 2, titulo: 'Matrices' },
+    { id: 'paso-3', num: 3, titulo: 'Aplicaciones' },
+    { id: 'paso-4', num: 4, titulo: 'Comparación' },
+    { id: 'paso-5', num: 5, titulo: 'Ecuaciones' },
+    { id: 'paso-6', num: 6, titulo: 'Resultados' },
+  ];
+  seccionActiva = 'paso-1';
+  navFija = false;
+  private observador?: IntersectionObserver;
+  private alScroll = () => {
+    const fija = window.scrollY > 220;
+    if (fija !== this.navFija) { this.navFija = fija; this.cdr.markForCheck(); }
+  };
+
   // --- Ficha del conjunto de datos ---
   // Cifras globales del origen: dimensionan el alcance sin tener que recordarlas.
   resumen: ResumenDatos | null = null;
@@ -137,6 +156,33 @@ export class App implements OnInit {
     this.cargarReponedores();
     this.cargarComparativa();
     this.cargarResumen();
+  }
+
+  ngAfterViewInit() {
+    window.addEventListener('scroll', this.alScroll, { passive: true });
+    // Marca como activa la sección que domina la pantalla.
+    this.observador = new IntersectionObserver((entradas) => {
+      const visible = entradas.filter(e => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target.id && visible.target.id !== this.seccionActiva) {
+        this.seccionActiva = visible.target.id;
+        this.cdr.markForCheck();
+      }
+    }, { rootMargin: '-72px 0px -55% 0px', threshold: [0.05, 0.3] });
+    for (const s of this.SECCIONES) {
+      const el = document.getElementById(s.id);
+      if (el) this.observador.observe(el);
+    }
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('scroll', this.alScroll);
+    this.observador?.disconnect();
+  }
+
+  irA(evento: Event, id: string) {
+    evento.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /** Ficha global del origen de datos. */
