@@ -1,7 +1,8 @@
 # main.py
 from fastapi import FastAPI, Query, Response
+from fastapi.responses import Response as RespuestaCruda
 from fastapi.middleware.cors import CORSMiddleware
-from google.cloud import bigquery
+from google.cloud import bigquery, storage
 from datetime import date, timedelta
 import os
 from cachetools import TTLCache
@@ -34,7 +35,7 @@ PRIORIDAD_ESTADO = {
 DIAS_ES = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
 
 app = FastAPI(
-    title="Analisis Matricial de un Proceso Industrial Automatizado",
+    title="Modelo Matricial de Control de Atencion de Puntos de Venta",
     description="""
 **Reto academico:** representar matematicamente el comportamiento de un proceso mediante
 transformaciones lineales y analisis matricial para evaluar su estabilidad y funcionamiento.
@@ -44,7 +45,7 @@ transformaciones lineales y analisis matricial para evaluar su estabilidad y fun
 
 **Modelo:** matriz de planificacion P, matriz de ejecucion E, matriz de brecha D = P - E,
 indicadores de cumplimiento y cobertura, suma de matrices, ponderacion por escalar k*E y
-resolucion de sistemas de ecuaciones por Gauss-Jordan.
+resolucion de sistemas de ecuaciones mediante operaciones elementales (Gauss-Jordan).
 
 **Optimizacion:** cache en memoria (TTLCache) para que las consultas recurrentes se
 resuelvan de forma instantanea.
@@ -60,6 +61,10 @@ app.add_middleware(
 # Permite que el navegador reutilice la respuesta sin volver a pedirla.
 CACHE_HTTP = "public, max-age=600, stale-while-revalidate=3600"
 
+# Archivo original entregado por la empresa, tal como fue recibido.
+BUCKET_FUENTE = "matriz-zero"
+RUTA_FUENTE = "UCATEC/wetrade_reporte_rutas_visitadas_historico_reponedores (14).csv"
+
 
 # --- Endpoints de la API ---
 
@@ -72,10 +77,36 @@ def health_check():
     }
 
 
-@app.get("/sistema/operadores", tags=["Configuracion del Sistema"], summary="Operadores del Sistema de Control")
+@app.get("/datos/fuente-original.csv", tags=["Datos"],
+         summary="Archivo original de WeTrade entregado por la empresa")
+def descargar_fuente():
+    """Sirve el CSV tal como lo entrego Industrias Venado S.A.
+
+    El archivo vive en un bucket privado con la proteccion de acceso publico
+    activada. En vez de desactivarla, se expone por esta ruta: asi el enlace no
+    caduca y el permiso de lectura queda en la cuenta de servicio del backend.
+    """
+    cache_key = "fuente_csv"
+    if cache_key not in cache:
+        try:
+            blob = storage.Client().bucket(BUCKET_FUENTE).blob(RUTA_FUENTE)
+            cache[cache_key] = blob.download_as_bytes()
+        except Exception as exc:
+            return {"error": "No se pudo leer el archivo de origen", "detalle": str(exc)}
+    return RespuestaCruda(
+        content=cache[cache_key],
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": 'inline; filename="wetrade_visitas_historico.csv"',
+            "Cache-Control": CACHE_HTTP,
+        },
+    )
+
+
+@app.get("/sistema/reponedores", tags=["Configuracion del Sistema"], summary="Reponedores")
 def get_reponedores(response: Response):
     response.headers["Cache-Control"] = CACHE_HTTP
-    cache_key = "operadores_lista"
+    cache_key = "reponedores_lista"
     if cache_key in cache:
         return cache[cache_key]
 
@@ -125,23 +156,23 @@ def get_semanas(response: Response):
          summary="Capitulo 1: Representacion Matricial del Estado del Sistema")
 def get_matrices_de_estado(
     response: Response,
-    operador: str = Query("2043 - SERGIO.OVANDO", description="Nombre del 'operador' a analizar."),
+    reponedor: str = Query("2043 - SERGIO.OVANDO", description="Nombre del reponedor a analizar."),
     fecha_semana: str = Query("TODO", description="'TODO' para todo el periodo disponible, o AAAA-MM-DD para una semana."),
 ):
     """Estado del sistema mediante las matrices P (Planificacion) y E (Ejecucion)."""
     response.headers["Cache-Control"] = CACHE_HTTP
-    return _generar_y_procesar_matrices(operador, fecha_semana)
+    return _generar_y_procesar_matrices(reponedor, fecha_semana)
 
 
 @app.get("/analisis/matriz-de-brecha", tags=["Analisis Principal"],
          summary="Capitulo 2: Analisis de Brecha (D = P - E)")
 def get_matriz_de_brecha(
     response: Response,
-    operador: str = Query("2043 - SERGIO.OVANDO"),
+    reponedor: str = Query("2043 - SERGIO.OVANDO"),
     fecha_semana: str = Query("TODO"),
 ):
     response.headers["Cache-Control"] = CACHE_HTTP
-    datos = _generar_y_procesar_matrices(operador, fecha_semana)
+    datos = _generar_y_procesar_matrices(reponedor, fecha_semana)
     if datos.get("error"):
         return datos
     P, E = datos["P"], datos["E"]
@@ -163,11 +194,11 @@ def get_matriz_de_brecha(
          summary="Capitulo 3: Indicadores de Estabilidad")
 def get_indicadores(
     response: Response,
-    operador: str = Query("2043 - SERGIO.OVANDO"),
+    reponedor: str = Query("2043 - SERGIO.OVANDO"),
     fecha_semana: str = Query("TODO"),
 ):
     response.headers["Cache-Control"] = CACHE_HTTP
-    datos = _generar_y_procesar_matrices(operador, fecha_semana)
+    datos = _generar_y_procesar_matrices(reponedor, fecha_semana)
     if datos.get("error"):
         return datos
     return {"descripcion": "Indicadores de Estabilidad", **datos["indicadores"], **datos}
@@ -177,12 +208,12 @@ def get_indicadores(
          summary="Capitulo 4: Ponderacion de Matriz (k * E)")
 def get_matriz_ponderada(
     response: Response,
-    operador: str = Query("2043 - SERGIO.OVANDO"),
+    reponedor: str = Query("2043 - SERGIO.OVANDO"),
     fecha_semana: str = Query("TODO"),
     k: float = Query(2.5, description="Escalar de ponderacion."),
 ):
     response.headers["Cache-Control"] = CACHE_HTTP
-    datos = _generar_y_procesar_matrices(operador, fecha_semana)
+    datos = _generar_y_procesar_matrices(reponedor, fecha_semana)
     if datos.get("error"):
         return datos
     E = datos["E"]
@@ -200,14 +231,14 @@ def get_matriz_ponderada(
          summary="Capitulo 5: Suma de Matrices (E1 + E2)")
 def get_suma_matrices(
     response: Response,
-    operador: str = Query("2043 - SERGIO.OVANDO"),
+    reponedor: str = Query("2043 - SERGIO.OVANDO"),
     semana_a: str = Query("2026-08-01", description="Primer periodo (AAAA-MM-DD)."),
     semana_b: str = Query("2026-08-08", description="Segundo periodo (AAAA-MM-DD)."),
 ):
     """Suma de ejecuciones de dos periodos: frecuencia acumulada de atencion por punto de venta."""
     response.headers["Cache-Control"] = CACHE_HTTP
-    a = _generar_y_procesar_matrices(operador, semana_a)
-    b = _generar_y_procesar_matrices(operador, semana_b)
+    a = _generar_y_procesar_matrices(reponedor, semana_a)
+    b = _generar_y_procesar_matrices(reponedor, semana_b)
     if a.get("error"):
         return a
     if b.get("error"):
@@ -215,11 +246,11 @@ def get_suma_matrices(
 
     # La suma exige dimensiones identicas. Como cada periodo puede traer distintos
     # clientes y distintos dias, ambas matrices se reindexan sobre la union de los ejes.
-    clientes = sorted(set(a["nodos_de_control"]) | set(b["nodos_de_control"]))
+    clientes = sorted(set(a["puntos_de_venta"]) | set(b["puntos_de_venta"]))
     dias = [d for d in DIAS_ES if d in set(a["dias_semana"]) | set(b["dias_semana"])]
 
     def alinear(datos):
-        fila_de = {c: i for i, c in enumerate(datos["nodos_de_control"])}
+        fila_de = {c: i for i, c in enumerate(datos["puntos_de_venta"])}
         col_de = {d: j for j, d in enumerate(datos["dias_semana"])}
         return [
             [datos["E"][fila_de[c]][col_de[d]] if c in fila_de and d in col_de else 0
@@ -232,7 +263,7 @@ def get_suma_matrices(
     return {
         "descripcion": "Suma de matrices E1 + E2 (acumulado de dos periodos)",
         "periodos": [semana_a, semana_b],
-        "nodos_de_control": clientes,
+        "puntos_de_venta": clientes,
         "dias_semana": dias,
         "E1": E1,
         "E2": E2,
@@ -241,33 +272,33 @@ def get_suma_matrices(
     }
 
 
-@app.get("/analisis/comparativa-operadores", tags=["Analisis Principal"],
-         summary="Capitulo 7: Comparacion entre operadores")
+@app.get("/analisis/comparativa-reponedores", tags=["Analisis Principal"],
+         summary="Capitulo 7: Comparacion entre reponedores")
 def get_comparativa(response: Response):
-    """Ranking de cumplimiento y cobertura por operador.
+    """Ranking de cumplimiento y cobertura por reponedor.
 
     Responde al objetivo del documento de comparar el desempeno entre reponedores,
-    que el analisis de un solo operador no permite ver.
+    que el analisis de un solo reponedor no permite ver.
     """
     response.headers["Cache-Control"] = CACHE_HTTP
-    cache_key = "comparativa_operadores"
+    cache_key = "comparativa_reponedores"
     if cache_key in cache:
         return cache[cache_key]
 
     query = f"""
         SELECT
-            `Nombre reponedor` AS operador,
+            `Nombre reponedor` AS reponedor,
             COUNTIF(`Estado visita` != @fuera_de_plan)                       AS planificadas,
             COUNTIF(`Estado visita` IN UNNEST(@ejecutados))                  AS ejecutadas,
             COUNTIF(`Estado visita` = 'VISITADA')                            AS efectivas,
             COUNTIF(`Estado visita` = 'NO VISITADA')                         AS no_ejecutadas,
             COUNTIF(`Estado visita` = 'VISITADA PERO NO COMPLETADA')         AS incompletas,
             COUNTIF(`Estado visita` = @fuera_de_plan)                        AS fuera_de_plan,
-            COUNT(DISTINCT `Cliente visitado`)                               AS nodos
+            COUNT(DISTINCT `Cliente visitado`)                               AS puntos_de_venta
         FROM `{TABLA}`
         WHERE `Nombre reponedor` IS NOT NULL
-        GROUP BY operador
-        ORDER BY operador
+        GROUP BY reponedor
+        ORDER BY reponedor
     """
     job_config = bigquery.QueryJobConfig(query_parameters=[
         bigquery.ScalarQueryParameter("fuera_de_plan", "STRING", ESTADO_FUERA_DE_PLAN),
@@ -283,8 +314,8 @@ def get_comparativa(response: Response):
     for f in filas:
         plan = f["planificadas"] or 0
         resultado.append({
-            "operador": f["operador"],
-            "nodos": f["nodos"],
+            "reponedor": f["reponedor"],
+            "puntos_de_venta": f["puntos_de_venta"],
             "planificadas": plan,
             "ejecutadas": f["ejecutadas"],
             "no_ejecutadas": f["no_ejecutadas"],
@@ -295,9 +326,9 @@ def get_comparativa(response: Response):
         })
     resultado.sort(key=lambda x: x["cumplimiento_efectivo_pct"], reverse=True)
     respuesta = {
-        "descripcion": "Comparativa de operadores del sistema de control",
-        "total_operadores": len(resultado),
-        "operadores": resultado,
+        "descripcion": "Comparativa de reponedores",
+        "total_reponedores": len(resultado),
+        "reponedores": resultado,
     }
     cache[cache_key] = respuesta
     return respuesta
@@ -337,9 +368,9 @@ def solve_sistema_ecuaciones(
 # --- Logica Interna: construccion de las matrices P y E ---
 
 def _generar_y_procesar_matrices(reponedor: str, periodo: str = "TODO"):
-    """Consulta BigQuery y arma las matrices del modelo. Cachea por operador y periodo.
+    """Consulta BigQuery y arma las matrices del modelo. Cachea por reponedor y periodo.
 
-    Filas    = puntos de venta (nodos de control).
+    Filas    = puntos de venta.
     Columnas = dias de la semana, tomados de la columna `Dia visita` del origen.
 
     Se usa el dia de la semana y no la fecha calendario porque los registros con estado
@@ -359,7 +390,7 @@ def _generar_y_procesar_matrices(reponedor: str, periodo: str = "TODO"):
         except ValueError:
             return {"error": "El periodo debe ser 'TODO' o una fecha AAAA-MM-DD."}
         # Al acotar a una semana, los registros sin fecha se conservan igual: pertenecen
-        # a la ruta del operador y su dia planificado es conocido.
+        # a la ruta del reponedor y su dia planificado es conocido.
         filtro_fecha = """
           AND (`Fecha inicio` BETWEEN @inicio AND DATE_ADD(@inicio, INTERVAL 6 DAY)
                OR `Fecha inicio` IS NULL)
@@ -387,7 +418,7 @@ def _generar_y_procesar_matrices(reponedor: str, periodo: str = "TODO"):
         return {"error": "Error al consultar BigQuery", "detalle": str(exc)}
 
     if not registros:
-        return {"error": "No se encontraron datos para el operador y periodo seleccionados."}
+        return {"error": "No se encontraron datos para el reponedor y periodo seleccionados."}
 
     # Ejes de la matriz. Las columnas siguen el orden natural de la semana, no el orden
     # en que aparecen los datos, y solo incluyen dias con actividad registrada.
@@ -443,14 +474,14 @@ def _generar_y_procesar_matrices(reponedor: str, periodo: str = "TODO"):
     incompletas = ejecutadas - efectivas
     celdas_planificadas = sum(sum(f) for f in P)
     celdas_con_fallo = sum(1 for i in range(nF) for j in range(nC) if P[i][j] - E[i][j] > 0)
-    nodos_planificados = sum(1 for f in P if sum(f) > 0)
-    nodos_atendidos = sum(1 for i in range(nF) if any(e_cnt[i][j] > 0 for j in range(nC)))
+    puntos_planificados = sum(1 for f in P if sum(f) > 0)
+    puntos_atendidos = sum(1 for i in range(nF) if any(e_cnt[i][j] > 0 for j in range(nC)))
 
     respuesta = {
         "reponedor": reponedor,
         "periodo": periodo,
         "fecha_consultada": periodo,
-        "nodos_de_control": clientes,
+        "puntos_de_venta": clientes,
         "dias_semana": dias,
         "P": P,
         "E": E,
@@ -475,13 +506,13 @@ def _generar_y_procesar_matrices(reponedor: str, periodo: str = "TODO"):
             "total_efectivas": efectivas,
             "celdas_planificadas": celdas_planificadas,
             "celdas_con_fallo": celdas_con_fallo,
-            "nodos_planificados": nodos_planificados,
-            "nodos_atendidos": nodos_atendidos,
+            "puntos_planificados": puntos_planificados,
+            "puntos_atendidos": puntos_atendidos,
             # Cumplimiento segun el documento: visitas realizadas / visitas planificadas.
             "indicador_cumplimiento_pct": round(ejecutadas / planificadas * 100, 2) if planificadas else 0,
             # Cumplimiento efectivo: solo las visitas que alcanzaron el minimo de minutos.
             "indicador_cumplimiento_efectivo_pct": round(efectivas / planificadas * 100, 2) if planificadas else 0,
-            "indicador_cobertura_pct": round(nodos_atendidos / nodos_planificados * 100, 2) if nodos_planificados else 0,
+            "indicador_cobertura_pct": round(puntos_atendidos / puntos_planificados * 100, 2) if puntos_planificados else 0,
         },
     }
     cache[cache_key] = respuesta

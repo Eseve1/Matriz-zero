@@ -113,9 +113,12 @@
   line-height: 1.5;
   color: var(--tinta);
 
-  strong { color: #8A4A1E; }
+  strong { color: #8A4A1E; font-weight: 600; }
   code { font-family: "IBM Plex Mono", monospace; font-size: .93em; }
   em { color: var(--gris); }
+
+
+
 }
 
 @media (min-width: 1500px) {
@@ -147,4 +150,30 @@
   background: var(--tinta);
   color: var(--papel);
   border-color: var(--tinta);
+}
+
+/* Enlaces a la fuente: el docente puede verificar los datos sin salir de la pantalla. */
+.enlace-fuente {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--dato);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(31, 82, 115, .35);
+
+  &:hover { border-bottom-color: var(--dato); }
+}
+
+.enlace-consulta {
+  margin: 14px 0 0;
+  font-size: .82rem;
+
+  a {
+    color: var(--gris);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--linea);
+
+    &::before { content: "{ } "; font-family: "IBM Plex Mono", monospace; opacity: .7; }
+    &:hover { color: var(--dato); border-bottom-color: var(--dato); }
+  }
 }

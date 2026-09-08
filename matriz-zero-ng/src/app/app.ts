@@ -15,16 +15,16 @@ interface Indicadores {
   total_incompletas: number;
   total_fuera_de_plan: number;
   celdas_con_fallo: number;
-  nodos_planificados: number;
-  nodos_atendidos: number;
+  puntos_planificados: number;
+  puntos_atendidos: number;
   indicador_cumplimiento_pct: number;
   indicador_cumplimiento_efectivo_pct: number;
   indicador_cobertura_pct: number;
 }
 
-interface OperadorComparado {
-  operador: string;
-  nodos: number;
+interface ReponedorComparado {
+  reponedor: string;
+  puntos_de_venta: number;
   planificadas: number;
   ejecutadas: number;
   no_ejecutadas: number;
@@ -36,7 +36,7 @@ interface OperadorComparado {
 interface MatrizResponse {
   reponedor: string;
   fecha_consultada: string;
-  nodos_de_control: string[];
+  puntos_de_venta: string[];
   dias_semana: string[];
   P: number[][];
   E: number[][];
@@ -61,7 +61,7 @@ export class App implements OnInit {
   // disparan deteccion de cambios por si solas. Hay que pedirla explicitamente o la
   // pantalla se queda con los valores iniciales aunque los datos ya hayan llegado.
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly apiUrl = 'https://matriz-zero-api-871430712754.us-central1.run.app';
+  readonly apiUrl = 'https://matriz-zero-api-871430712754.us-central1.run.app';
 
   // --- Estado de la UI ---
   loading = false;        // Carga inicial (pantalla vacia)
@@ -88,7 +88,7 @@ export class App implements OnInit {
   E: number[][] = [];
   E_estado: string[][] = [];
   D: number[][] = [];
-  PDV: string[] = []; // Nombres de los nodos/clientes
+  PDV: string[] = []; // Puntos de venta (filas de la matriz)
   DIAS: string[] = [];
   nF = 0; nC = 0; // Dimensiones
 
@@ -108,13 +108,8 @@ export class App implements OnInit {
   k = 2; // Escalar para ponderación
   kE: number[][] = []; // Matriz ponderada k*E
 
-  // --- Notas del expositor ---
-  // Recordatorios al margen para la defensa. Apagadas por defecto: si estuvieran
-  // siempre visibles, el docente tambien las leeria.
-  notas = false;
-
-  // --- Comparativa entre operadores ---
-  comparativa: OperadorComparado[] = [];
+  // --- Comparativa entre reponedores ---
+  comparativa: ReponedorComparado[] = [];
   cargandoComparativa = false;
   
   // --- Parámetros Sistema de Ecuaciones ---
@@ -125,20 +120,19 @@ export class App implements OnInit {
   pasosGauss: any[] = [];
   
   ngOnInit() {
-    try { this.notas = localStorage.getItem('notas-expositor') === '1'; } catch { /* sin storage */ }
     // Se inicializa primero porque es matematica pura: debe verse aunque la API falle.
     this.construirGauss();
     this.cargarReponedores();
     this.cargarComparativa();
   }
 
-  /** Ranking de operadores: responde al objetivo de comparar reponedores entre sí. */
+  /** Ranking de reponedores: responde al objetivo de compararlos entre sí (§3.1 y §6). */
   cargarComparativa() {
     this.cargandoComparativa = true;
-    this.http.get<{ operadores: OperadorComparado[] }>(`${this.apiUrl}/analisis/comparativa-operadores`)
+    this.http.get<{ reponedores: ReponedorComparado[] }>(`${this.apiUrl}/analisis/comparativa-reponedores`)
       .subscribe({
         next: (data) => {
-          this.comparativa = data.operadores || [];
+          this.comparativa = data.reponedores || [];
           this.cargandoComparativa = false;
           this.cdr.markForCheck();
         },
@@ -148,7 +142,7 @@ export class App implements OnInit {
 
   cargarReponedores() {
     this.loading = true;
-    this.http.get<Reponedor[]>(`${this.apiUrl}/sistema/operadores`).subscribe({
+    this.http.get<Reponedor[]>(`${this.apiUrl}/sistema/reponedores`).subscribe({
       next: (data) => {
         this.reponedores = data;
         const destacado = data.find(r => r.nombre.includes('SERGIO.OVANDO'));
@@ -205,7 +199,7 @@ export class App implements OnInit {
     this.P = data.P;
     this.E = data.E;
     this.E_estado = data.E_estado;
-    this.PDV = data.nodos_de_control;
+    this.PDV = data.puntos_de_venta;
     this.DIAS = data.dias_semana;
     this.nF = this.P.length;
     this.nC = this.P[0]?.length || 0;
@@ -218,8 +212,8 @@ export class App implements OnInit {
     if (ind) {
       this.totalPlanificadas = ind.total_planificadas;
       this.totalEjecutadas = ind.total_ejecutadas;
-      this.totalPdvPlanificados = ind.nodos_planificados;
-      this.totalPdvAtendidos = ind.nodos_atendidos;
+      this.totalPdvPlanificados = ind.puntos_planificados;
+      this.totalPdvAtendidos = ind.puntos_atendidos;
       this.cump = ind.indicador_cumplimiento_pct;
       this.cumpEfectivo = ind.indicador_cumplimiento_efectivo_pct;
       this.cob = ind.indicador_cobertura_pct;
@@ -244,8 +238,8 @@ export class App implements OnInit {
 
   private claveCache = (operador: string, fecha: string) => `${operador}|${fecha}`;
 
-  private urlMatriz = (operador: string, fecha: string) =>
-    `${this.apiUrl}/analisis/matrices-de-estado?operador=${encodeURIComponent(operador)}&fecha_semana=${fecha}`;
+  urlMatriz = (reponedor: string, fecha: string) =>
+    `${this.apiUrl}/analisis/matrices-de-estado?reponedor=${encodeURIComponent(reponedor)}&fecha_semana=${fecha}`;
 
   recalcularTodo() {
     if (!this.P.length || !this.E.length) return;
@@ -326,11 +320,6 @@ export class App implements OnInit {
     this.totalE = 0; this.totalP = 0; this.kE = [];
   }
   
-  alternarNotas() {
-    this.notas = !this.notas;
-    try { localStorage.setItem('notas-expositor', this.notas ? '1' : '0'); } catch { /* sin storage */ }
-  }
-
   reiniciarGauss() { this.pasoGauss = 0; this.construirGauss(); }
   avanzarGauss() { if (this.pasoGauss < this.pasosGauss.length - 1) { this.pasoGauss++; setTimeout(() => this.renderGaussLaTex(), 0); }}
   

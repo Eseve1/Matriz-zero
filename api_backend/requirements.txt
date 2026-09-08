@@ -9,3 +9,4 @@ pandas
 db-dtypes # Requerido por BigQuery para manejar tipos de datos
 pyarrow  # Requerido por to_dataframe_async para optimización
 cachetools # Para el cache en memoria
+google-cloud-storage # Para servir el archivo original entregado por la empresa
