@@ -108,6 +108,11 @@ export class App implements OnInit {
   k = 2; // Escalar para ponderación
   kE: number[][] = []; // Matriz ponderada k*E
 
+  // --- Notas del expositor ---
+  // Recordatorios al margen para la defensa. Apagadas por defecto: si estuvieran
+  // siempre visibles, el docente tambien las leeria.
+  notas = false;
+
   // --- Comparativa entre operadores ---
   comparativa: OperadorComparado[] = [];
   cargandoComparativa = false;
@@ -120,6 +125,7 @@ export class App implements OnInit {
   pasosGauss: any[] = [];
   
   ngOnInit() {
+    try { this.notas = localStorage.getItem('notas-expositor') === '1'; } catch { /* sin storage */ }
     // Se inicializa primero porque es matematica pura: debe verse aunque la API falle.
     this.construirGauss();
     this.cargarReponedores();
@@ -320,6 +326,11 @@ export class App implements OnInit {
     this.totalE = 0; this.totalP = 0; this.kE = [];
   }
   
+  alternarNotas() {
+    this.notas = !this.notas;
+    try { localStorage.setItem('notas-expositor', this.notas ? '1' : '0'); } catch { /* sin storage */ }
+  }
+
   reiniciarGauss() { this.pasoGauss = 0; this.construirGauss(); }
   avanzarGauss() { if (this.pasoGauss < this.pasosGauss.length - 1) { this.pasoGauss++; setTimeout(() => this.renderGaussLaTex(), 0); }}
   

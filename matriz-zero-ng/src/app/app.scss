@@ -11,6 +11,10 @@
 .formula-kpi code { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; background: rgba(31,82,115,0.07); padding: 3px 7px; border-radius: 3px; }
 .nota-metodo { font-size: .85rem; color: var(--gris); border-left: 3px solid var(--linea); padding: 8px 12px; margin: 16px 0; background: rgba(0,0,0,0.02); }
 .tabla-comparativa td, .tabla-comparativa th { text-align: right; white-space: nowrap; }
+/* Los encabezados van con las palabras completas: se dejan cortar en dos lineas
+   para que la columna no se ensanche de mas. */
+.tabla-comparativa thead th { white-space: normal; max-width: 108px; line-height: 1.25;
+  vertical-align: bottom; font-size: .74rem; }
 .tabla-comparativa th[scope="row"] { text-align: left; font-weight: 400; }
 .tabla-comparativa tbody tr:nth-child(even) { background: rgba(0,0,0,.018); }
 .tabla-comparativa tbody tr:hover { background: rgba(31,82,115,.06); }
@@ -92,4 +96,55 @@
   color: var(--gris);
   font-style: italic;
   max-width: 60ch;
+}
+
+/* --- Notas del expositor ---
+   En pantallas anchas van al margen derecho, fuera del flujo, con una flecha que
+   apunta a la sección. En pantallas angostas caen debajo del título como un bloque
+   normal, porque no hay margen donde ponerlas. */
+.paso { position: relative; }
+
+.nota-margen {
+  border-left: 3px solid var(--acento, #C0703A);
+  background: rgba(192, 112, 58, .06);
+  padding: 12px 14px;
+  margin: 14px 0 18px;
+  font-size: .85rem;
+  line-height: 1.5;
+  color: var(--tinta);
+
+  strong { color: #8A4A1E; }
+  code { font-family: "IBM Plex Mono", monospace; font-size: .93em; }
+  em { color: var(--gris); }
+}
+
+@media (min-width: 1500px) {
+  .nota-margen {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin: 0 0 0 32px;
+    width: 250px;
+    background: transparent;
+    border-left: 2px solid var(--linea);
+    font-size: .8rem;
+    color: var(--gris);
+
+    /* Flecha que vincula la nota con la sección. */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 11px;
+      left: -33px;
+      width: 24px;
+      height: 1px;
+      background: var(--linea);
+    }
+  }
+}
+
+.btn.activo {
+  background: var(--tinta);
+  color: var(--papel);
+  border-color: var(--tinta);
 }

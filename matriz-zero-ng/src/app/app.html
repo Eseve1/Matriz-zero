@@ -24,10 +24,13 @@
       <p><span>Estudiantes</span>Aranibar Rivera José Fernando · Huanca Cayo Nobelia Jhannel · Severiche Socore Edilberto · Rasguido Martínez Jhosselyn</p>
       <p><span>Grupo</span>Matriz Zero</p>
       <p><span>Docente</span>Diego Rodrigo Flores Alfaro</p>
-      <p style="color: var(--dato); font-weight: 600;">Implementación: Modelo matemático en vivo conectado a datos reales vía API RESTful (GCP).</p>
+      <p><span>Datos</span>3.774 registros reales de atención, consultados en vivo. Ningún valor está cargado a mano: cada matriz e indicador se calcula en el momento a partir de la base.</p>
     </div>
     <div class="barra-modo">
       <button class="btn claro" (click)="restablecerValores()">Restablecer datos</button>
+      <button class="btn claro" (click)="alternarNotas()" [class.activo]="notas">
+        {{ notas ? 'Ocultar' : 'Mostrar' }} notas del expositor
+      </button>
     </div>
   </div>
 </header>
@@ -73,6 +76,10 @@
   <!-- PASO 1 (NUEVO): Resumen Gerencial y KPIs -->
   <section class="paso">
     <h2><span class="num">1.</span> Resumen de Estabilidad y Funcionamiento</h2>
+    @if (notas) {
+      <aside class="nota-margen"><strong>Si preguntan de dónde salen estos números:</strong> los calcula el servidor a partir de las matrices, no el navegador. Una sola fuente de verdad.<br><br><strong>Cumplimiento</strong> = ΣE / ΣP × 100 (documento §5.2.4).<br><strong>Cobertura</strong> = nodos atendidos / planificados × 100 (§5.2.5).<br><br><strong>Cumplimiento efectivo</strong> no está en el documento: cuenta solo las visitas que además alcanzaron el mínimo de minutos configurado. Es un agregado nuestro.</aside>
+    }
+
     <p class="guia">
       Indicadores clave (KPIs) que miden la salud del proceso para el operador y período seleccionados.
       El cumplimiento mide la eficiencia en la ejecución, mientras que la cobertura mide el alcance del servicio.
@@ -108,6 +115,10 @@
   <!-- PASO 2 (NUEVO): Desglose Matricial -->
   <section class="paso">
     <h2><span class="num">2.</span> Desglose Matricial del Proceso</h2>
+    @if (notas) {
+      <aside class="nota-margen"><strong>La pregunta más probable: ¿por qué las columnas son días de la semana y no fechas?</strong><br><br>Porque en el origen los registros <em>NO VISITADA</em> llegan sin fecha —la visita nunca inició—, pero sí conservan el día planificado. Si indexáramos por fecha, esos registros quedarían fuera y la brecha D = P − E daría cero siempre. Indexar por día los incluye sin inventar ningún dato.<br><br><strong>Qué significa E = 1:</strong> se cumplieron todas las visitas planificadas de esa celda. Por eso D = 1 marca exactamente los puntos con incumplimiento.</aside>
+    }
+
     <p class="guia">
       Representación visual del estado del sistema. La Matriz de Planificación (P) muestra el estado ideal, mientras que la
       Matriz de Ejecución (E) muestra el estado real observado, utilizando un código de colores para una interpretación instantánea.
@@ -214,6 +225,10 @@
   <!-- PASO 3: Aplicaciones del Modelo -->
   <section class="paso">
     <h2><span class="num">3.</span> Aplicaciones del Modelo Matricial</h2>
+    @if (notas) {
+      <aside class="nota-margen"><strong>Los vectores del §5.2.2</strong> son la columna y la fila Σ del borde de cada matriz: sumar una fila da la frecuencia de atención de ese punto de venta.<br><br><strong>La ponderación k·E</strong> es la multiplicación por escalar del §5.2.6. Sirve para dar más peso a los puntos de venta estratégicos.<br><br>El documento también menciona la <strong>suma de matrices</strong> (§5.2.6): está implementada en la API, en el endpoint <code>/analisis/suma-de-matrices</code>, sumando dos períodos.</aside>
+    }
+
     <p class="guia">El modelo permite aplicar transformaciones y análisis para responder a distintas preguntas de negocio sobre el mismo conjunto de datos.</p>
     
     <h3>Análisis Vectorial de Funcionamiento</h3>
@@ -282,6 +297,10 @@
   <!-- Comparación entre operadores -->
   <section class="paso">
     <h2><span class="num">4.</span> Comparación entre Operadores</h2>
+    @if (notas) {
+      <aside class="nota-margen"><strong>Son los 28 operadores completos</strong>, no una muestra: la base tiene 3.774 registros con exactamente 28 reponedores distintos y 352 puntos de venta.<br><br>Esto responde al objetivo del documento de comparar el desempeño entre reponedores (§3.1 y §6), que el análisis de uno solo no permite ver.<br><br><strong>Si preguntan por el caso extremo:</strong> hay un operador con 6,8% de cumplimiento y 82 visitas no ejecutadas. No es un error del modelo, es lo que dicen los datos.</aside>
+    }
+
     <p class="guia">
       El mismo modelo aplicado a los {{ comparativa.length }} operadores del sistema permite
       compararlos entre sí, que es uno de los objetivos del proyecto. Ordenado por cumplimiento efectivo.
@@ -295,12 +314,12 @@
           <thead>
             <tr>
               <th scope="col">Operador</th>
-              <th scope="col">PDV</th>
-              <th scope="col">Planif.</th>
-              <th scope="col">Ejec.</th>
-              <th scope="col">No ejec.</th>
-              <th scope="col">Cumpl.</th>
-              <th scope="col">Efectivo</th>
+              <th scope="col">Puntos de venta</th>
+              <th scope="col">Visitas planificadas</th>
+              <th scope="col">Visitas ejecutadas</th>
+              <th scope="col">No ejecutadas</th>
+              <th scope="col">Cumplimiento</th>
+              <th scope="col">Cumplimiento efectivo</th>
             </tr>
           </thead>
           <tbody>
@@ -327,7 +346,15 @@
   <!-- PASO 4: Sistema de Ecuaciones Lineales -->
   <section class="paso">
     <h2><span class="num">5.</span> El Álgebra Matricial como Herramienta de Resolución</h2>
-    <p class="guia">El álgebra lineal no solo describe sistemas, también los resuelve. Un sistema de ecuaciones lineales puede representar un problema de distribución de recursos, resuelto mediante la eliminación de Gauss-Jordan.</p>
+    @if (notas) {
+      <aside class="nota-margen"><strong>El sistema por defecto es el del documento §5.2.7:</strong> x + y = 20, 2x + y = 30. Solución x = 10, y = 10.<br><br>El documento dice «mediante operaciones elementales»; el método se llama eliminación de Gauss-Jordan. Los coeficientes son editables: se puede resolver cualquier sistema 2×2 en vivo.<br><br><strong>Ojo con el determinante:</strong> es |A| = ad − bc. En el documento entregado quedó escrito como ad + bc, es una errata del texto. Acá está bien calculado.</aside>
+    }
+
+    <p class="guia">
+      El álgebra lineal no solo describe sistemas, también los resuelve. El sistema se representa
+      como matriz ampliada y se resuelve aplicando operaciones elementales por filas
+      —el método conocido como eliminación de Gauss-Jordan—, mostrando cada paso.
+    </p>
     
     <div class="gauss-caja">
       <div>
@@ -347,7 +374,7 @@
         <div class="aviso" [hidden]="det !== 0">El determinante es cero. El sistema no tiene solución única.</div>
       </div>
       <div>
-        <h3>Resolución por Gauss-Jordan</h3>
+        <h3>Resolución por operaciones elementales</h3>
         <div class="controles">
           <button class="btn" (click)="avanzarGauss()" [disabled]="pasoGauss >= pasosGauss.length - 1">Siguiente Operación</button>
           <button class="btn oscuro" (click)="reiniciarGauss()">Reiniciar</button>
