@@ -77,6 +77,60 @@ def health_check():
     }
 
 
+@app.get("/datos/resumen", tags=["Datos"], summary="Ficha del conjunto de datos")
+def resumen_datos(response: Response):
+    """Cifras globales del origen: sirven para dimensionar el alcance del analisis."""
+    response.headers["Cache-Control"] = CACHE_HTTP
+    cache_key = "resumen_datos"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    query = f"""
+        SELECT
+            COUNT(*)                                                        AS registros,
+            COUNTIF(`Estado visita` != @fuera_de_plan)                      AS planificadas,
+            COUNTIF(`Estado visita` IN UNNEST(@ejecutados))                 AS ejecutadas,
+            COUNTIF(`Estado visita` = 'VISITADA')                           AS completas,
+            COUNTIF(`Estado visita` = 'VISITADA PERO NO COMPLETADA')        AS incompletas,
+            COUNTIF(`Estado visita` = 'NO VISITADA')                        AS no_ejecutadas,
+            COUNTIF(`Estado visita` = @fuera_de_plan)                       AS fuera_de_plan,
+            COUNT(DISTINCT `Nombre reponedor`)                              AS reponedores,
+            COUNT(DISTINCT `Cliente visitado`)                              AS puntos_de_venta,
+            COUNT(DISTINCT `Ruta`)                                          AS rutas,
+            MIN(`Fecha inicio`)                                             AS desde,
+            MAX(`Fecha inicio`)                                             AS hasta
+        FROM `{TABLA}`
+    """
+    job_config = bigquery.QueryJobConfig(query_parameters=[
+        bigquery.ScalarQueryParameter("fuera_de_plan", "STRING", ESTADO_FUERA_DE_PLAN),
+        bigquery.ArrayQueryParameter("ejecutados", "STRING", sorted(ESTADOS_EJECUTADOS)),
+    ])
+    try:
+        f = dict(list(client.query(query, job_config=job_config))[0])
+    except Exception as exc:
+        return {"error": "Error al consultar BigQuery", "detalle": str(exc)}
+
+    plan = f["planificadas"] or 0
+    respuesta = {
+        "registros": f["registros"],
+        "reponedores": f["reponedores"],
+        "puntos_de_venta": f["puntos_de_venta"],
+        "rutas": f["rutas"],
+        "desde": f["desde"].isoformat() if f["desde"] else None,
+        "hasta": f["hasta"].isoformat() if f["hasta"] else None,
+        "planificadas": plan,
+        "ejecutadas": f["ejecutadas"],
+        "completas": f["completas"],
+        "incompletas": f["incompletas"],
+        "no_ejecutadas": f["no_ejecutadas"],
+        "fuera_de_plan": f["fuera_de_plan"],
+        "cumplimiento_pct": round(f["ejecutadas"] / plan * 100, 2) if plan else 0,
+        "cumplimiento_efectivo_pct": round(f["completas"] / plan * 100, 2) if plan else 0,
+    }
+    cache[cache_key] = respuesta
+    return respuesta
+
+
 @app.get("/datos/fuente-original.csv", tags=["Datos"],
          summary="Archivo original de WeTrade entregado por la empresa")
 def descargar_fuente():

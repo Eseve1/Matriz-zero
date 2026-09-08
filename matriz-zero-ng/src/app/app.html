@@ -76,6 +76,29 @@
     </div>
   </div>
 
+  <!-- Ficha del conjunto de datos: dimensiona el alcance antes de entrar al detalle -->
+  @if (resumen) {
+    <div class="ficha-datos">
+      <p class="ficha-datos-titulo">Conjunto de datos analizado</p>
+      <ul>
+        <li><b>{{ resumen.registros | number }}</b><span>registros de visita</span></li>
+        <li><b>{{ resumen.reponedores }}</b><span>reponedores</span></li>
+        <li><b>{{ resumen.puntos_de_venta | number }}</b><span>puntos de venta</span></li>
+        <li><b>{{ resumen.rutas }}</b><span>rutas</span></li>
+        <li><b>{{ resumen.cumplimiento_pct | number:'1.1-1' }}%</b><span>cumplimiento global</span></li>
+        <li><b>{{ resumen.cumplimiento_efectivo_pct | number:'1.1-1' }}%</b><span>cumplimiento efectivo</span></li>
+      </ul>
+      <p class="ficha-datos-pie">
+        Período {{ resumen.desde }} a {{ resumen.hasta }} ·
+        {{ resumen.planificadas | number }} visitas planificadas,
+        {{ resumen.ejecutadas | number }} ejecutadas,
+        {{ resumen.no_ejecutadas | number }} no ejecutadas,
+        {{ resumen.incompletas | number }} que no alcanzaron el mínimo de minutos y
+        {{ resumen.fuera_de_plan }} fuera de plan.
+      </p>
+    </div>
+  }
+
   <!-- PASO 1 (NUEVO): Resumen Gerencial y KPIs -->
   <section class="paso">
     <h2><span class="num">1.</span> Indicadores de Cumplimiento y Cobertura</h2>
@@ -345,9 +368,9 @@
     <h2><span class="num">5.</span> El Álgebra Matricial como Herramienta de Resolución</h2>
 
     <p class="guia">
-      El álgebra lineal no solo describe sistemas, también los resuelve. El sistema se representa
-      como matriz ampliada y se resuelve aplicando operaciones elementales por filas
-      —el método conocido como eliminación de Gauss-Jordan—, mostrando cada paso.
+      El álgebra lineal no solo describe sistemas: también los resuelve. El sistema se escribe como
+      matriz ampliada y se resuelve con operaciones elementales por filas, mostrando cada paso.
+      Ese método se conoce como eliminación de Gauss-Jordan.
     </p>
     
     <div class="gauss-caja">

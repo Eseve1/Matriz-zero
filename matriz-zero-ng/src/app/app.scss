@@ -177,3 +177,51 @@
     &:hover { color: var(--dato); border-bottom-color: var(--dato); }
   }
 }
+
+/* Ficha del conjunto de datos: dimensiona el origen de un vistazo, para no
+   depender de que el expositor recuerde las cifras. */
+.ficha-datos {
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin: 24px 0;
+  background: rgba(31, 82, 115, .035);
+}
+
+.ficha-datos-titulo {
+  margin: 0 0 12px;
+  font-size: .71rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--gris);
+}
+
+.ficha-datos ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 34px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li { display: flex; flex-direction: column; }
+
+  b {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.32rem;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span { font-size: .78rem; color: var(--gris); }
+}
+
+.ficha-datos-pie {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea-fina);
+  font-size: .82rem;
+  color: var(--gris);
+}

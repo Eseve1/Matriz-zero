@@ -22,6 +22,14 @@ interface Indicadores {
   indicador_cobertura_pct: number;
 }
 
+interface ResumenDatos {
+  registros: number; reponedores: number; puntos_de_venta: number; rutas: number;
+  desde: string; hasta: string;
+  planificadas: number; ejecutadas: number; completas: number;
+  incompletas: number; no_ejecutadas: number; fuera_de_plan: number;
+  cumplimiento_pct: number; cumplimiento_efectivo_pct: number;
+}
+
 interface ReponedorComparado {
   reponedor: string;
   puntos_de_venta: number;
@@ -108,6 +116,10 @@ export class App implements OnInit {
   k = 2; // Escalar para ponderación
   kE: number[][] = []; // Matriz ponderada k*E
 
+  // --- Ficha del conjunto de datos ---
+  // Cifras globales del origen: dimensionan el alcance sin tener que recordarlas.
+  resumen: ResumenDatos | null = null;
+
   // --- Comparativa entre reponedores ---
   comparativa: ReponedorComparado[] = [];
   cargandoComparativa = false;
@@ -124,6 +136,15 @@ export class App implements OnInit {
     this.construirGauss();
     this.cargarReponedores();
     this.cargarComparativa();
+    this.cargarResumen();
+  }
+
+  /** Ficha global del origen de datos. */
+  cargarResumen() {
+    this.http.get<ResumenDatos>(`${this.apiUrl}/datos/resumen`).subscribe({
+      next: (d) => { this.resumen = d; this.cdr.markForCheck(); },
+      error: () => { /* la ficha es informativa: si falla, la pantalla sigue */ }
+    });
   }
 
   /** Ranking de reponedores: responde al objetivo de compararlos entre sí (§3.1 y §6). */
