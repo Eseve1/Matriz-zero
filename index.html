@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es-BO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matriz Zero — control de atención de puntos de venta</title>
+<meta name="description" content="Modelo matricial de control de atención de puntos de venta. Álgebra Lineal y Matricial, Universidad UCATEC.">
+<meta name="theme-color" content="#14304A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<style>
+:root{
+  --tinta:#14304A;
+  --papel:#F8F8F5;
+  --linea:#D5D6CF;
+  --linea-fina:#E4E5DF;
+  --gris:#5C6670;
+  --dato:#1F5273;
+  --falta:#8C2F2A;
+  --celda:44px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--papel);color:var(--tinta);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:18px;line-height:1.68;
+}
+.envoltura{max-width:880px;margin:0 auto;padding:0 24px 160px}
+
+.portada{padding:52px 0 0}
+.portada .institucion{font-size:.92rem;color:var(--gris);margin:0 0 20px}
+.portada h1{
+  font-size:clamp(1.6rem,5.6vw,2.4rem);font-weight:700;line-height:1.22;
+  margin:0 0 10px;letter-spacing:-.005em;max-width:22ch;
+}
+.portada .subtitulo{font-size:1.05rem;color:var(--gris);margin:0 0 28px;font-style:italic}
+.ficha{border-top:1px solid var(--tinta);border-bottom:1px solid var(--linea);padding:16px 0;margin:0}
+.ficha p{margin:0 0 8px;font-size:.94rem;line-height:1.55}
+.ficha p:last-child{margin-bottom:0;color:var(--gris);font-size:.88rem}
+.ficha span{display:block;color:var(--gris);font-size:.8rem;margin-bottom:2px}
+.barra-modo{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0 0}
+
+button{font-family:inherit;font-size:.95rem;cursor:pointer}
+.btn{background:var(--tinta);color:#fff;border:1px solid var(--tinta);border-radius:2px;padding:11px 22px;line-height:1.2;min-height:44px}
+.btn:hover{background:#1d4364}
+.btn.claro,.btn.oscuro{background:transparent;color:var(--tinta);border-color:var(--tinta)}
+.btn.claro:hover,.btn.oscuro:hover{background:rgba(20,48,74,.07)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--dato);outline-offset:2px}
+button[disabled]{opacity:.35;cursor:default}
+
+.paso{padding:50px 0 44px;border-top:1px solid var(--linea-fina)}
+.paso:first-of-type{border-top:0}
+.paso h2{
+  font-size:clamp(1.25rem,4.4vw,1.62rem);font-weight:700;margin:0 0 10px;
+  display:flex;align-items:baseline;gap:14px;letter-spacing:-.005em;
+}
+.paso h2 .num{font-weight:400;color:var(--gris);flex:none}
+.paso .guia{color:var(--gris);margin:0 0 26px;max-width:68ch;font-size:1.02rem}
+h3{font-size:1.04rem;font-weight:600;margin:36px 0 12px;padding-top:14px;border-top:1px solid var(--linea-fina)}
+h3:first-of-type{margin-top:26px}
+
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.tablero{display:flex;flex-wrap:wrap;gap:32px}
+.matriz-caja{flex:1 1 300px;min-width:0}
+.matriz-caja > figcaption{font-size:.9rem;color:var(--gris);margin-bottom:10px;font-style:italic}
+table.matriz{border-collapse:collapse;font-family:"IBM Plex Mono",monospace;font-size:1rem}
+table.matriz th{font-weight:400;color:var(--gris);font-size:.76rem;padding:5px 6px;text-align:center;font-family:"Source Serif 4",serif}
+table.matriz th[scope="row"]{text-align:right;padding-right:12px;white-space:nowrap}
+table.matriz td{padding:0}
+.celda{
+  width:var(--celda);height:var(--celda);border:1px solid var(--linea);background:#fff;
+  font-family:"IBM Plex Mono",monospace;font-size:1rem;color:#A0A6AA;
+  display:flex;align-items:center;justify-content:center;
+}
+button.celda:hover{border-color:var(--tinta)}
+.celda.uno{background:rgba(31,82,115,.1);color:var(--dato);font-weight:600;border-color:rgba(31,82,115,.3)}
+.celda.falta{background:rgba(140,47,42,.1);color:var(--falta);font-weight:600;border-color:rgba(140,47,42,.35)}
+.celda.eje{box-shadow:inset 0 0 0 2px rgba(31,82,115,.4)}
+th.eje{color:var(--tinta);font-weight:600}
+
+.vector{font-family:"IBM Plex Mono",monospace;font-size:.9rem;margin:16px 0 0;color:var(--tinta)}
+.filas-vector{list-style:none;padding:0;margin:12px 0 0;max-width:480px}
+.filas-vector li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--linea-fina);font-size:.95rem}
+.filas-vector .etq{width:78px;flex:none;color:var(--gris)}
+.medidor{flex:1;min-width:40px;height:7px;background:#E9EAE4;position:relative}
+.medidor span{position:absolute;inset:0 auto 0 0;background:var(--dato)}
+.filas-vector .val{font-family:"IBM Plex Mono",monospace;width:64px;text-align:right;flex:none}
+
+.formula{
+  background:#fff;border:1px solid var(--linea-fina);border-left:3px solid var(--tinta);
+  padding:14px 18px;margin:12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  font-family:"IBM Plex Mono",monospace;font-size:.86rem;color:var(--tinta);
+}
+.formula .katex{font-size:1.06em}
+.operacion{background:#fff;border:1px solid var(--linea);padding:22px 18px;margin:16px 0;overflow-x:auto;text-align:center}
+
+.indicadores{display:flex;flex-wrap:wrap;gap:28px;margin-top:12px}
+.indicador{flex:1 1 260px;min-width:0;border-top:2px solid var(--tinta);padding-top:14px}
+.indicador .cifra{font-family:"IBM Plex Mono",monospace;font-size:clamp(1.9rem,7vw,2.5rem);font-weight:600;line-height:1;display:block;margin:6px 0}
+.indicador .nombre{font-weight:600}
+.indicador .detalle{color:var(--gris);font-size:.9rem}
+
+.controles{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:24px}
+.controles label{font-size:.9rem;color:var(--gris)}
+select{font-family:inherit;font-size:.95rem;padding:10px;border:1px solid var(--linea);background:#fff;color:var(--tinta);border-radius:2px;min-height:44px}
+input[type=range]{accent-color:var(--dato);min-width:140px;flex:1 1 140px;max-width:260px}
+input[type=number]{font-family:"IBM Plex Mono",monospace;font-size:1rem;width:64px;padding:10px 6px;border:1px solid var(--linea);border-radius:2px;background:#fff;color:var(--tinta);text-align:center}
+.aviso{border-left:3px solid var(--falta);background:rgba(140,47,42,.06);padding:12px 18px;margin-top:16px;font-size:.95rem}
+.aviso[hidden]{display:none}
+
+.gauss-paso{margin:18px 0;padding-left:18px;border-left:1px solid var(--linea)}
+.gauss-paso.activo{border-left:2px solid var(--tinta);padding-left:17px}
+.gauss-op{font-family:"IBM Plex Mono",monospace;font-size:.84rem;color:var(--gris);margin-bottom:8px}
+.gauss-mat{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.cadena{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0;font-size:.93rem}
+.cadena i{font-style:normal;border:1px solid var(--linea);padding:7px 13px;background:#fff}
+.cadena i.fin{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.cadena s{text-decoration:none;color:var(--gris)}
+
+.navpaso{
+  position:fixed;left:0;right:0;bottom:0;background:var(--tinta);color:#fff;
+  display:none;align-items:center;justify-content:center;gap:12px;
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:9;
+}
+body.presentando .navpaso{display:flex}
+body.presentando .paso{display:none;border-top:0}
+body.presentando .paso.actual{display:block;padding-top:26px}
+body.presentando .portada{display:none}
+.navpaso button{background:transparent;border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:2px;padding:10px 16px;min-height:44px;font-family:inherit}
+.navpaso button:hover{background:rgba(255,255,255,.14)}
+.navpaso .cuenta{font-family:"IBM Plex Mono",monospace;font-size:.85rem;white-space:nowrap}
+
+@media (min-width:900px){ body.presentando{font-size:20px} }
+@media (max-width:700px){
+  .tablero{gap:28px}
+  .matriz-caja{flex:1 1 100%}
+}
+@media (max-width:640px){
+  :root{--celda:38px}
+  body{font-size:17px}
+  .envoltura{padding:0 18px 150px}
+  .portada{padding-top:36px}
+  .paso{padding:38px 0 34px}
+  .navpaso .cuenta{font-size:.78rem}
+  .navpaso button{padding:10px 12px;font-size:.88rem}
+}
+@media (max-width:380px){
+  :root{--celda:33px}
+  .celda{font-size:.9rem}
+  .filas-vector .etq{width:64px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+@media print{
+  .navpaso,.barra-modo,.controles button,#btnGauss,#btnGaussReset{display:none!important}
+  body{background:#fff;font-size:11pt}
+  body.presentando .paso{display:block!important}
+  .portada{display:block!important;padding-top:0}
+  .paso{page-break-inside:avoid}
+  .formula,.operacion,.celda{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header class="portada">
+  <div class="envoltura">
+    <p class="institucion">Universidad UCATEC · Álgebra Lineal y Matricial</p>
+    <h1>Modelo matricial de control de atención de puntos de venta</h1>
+    <p class="subtitulo">Industrias Venado S.A., área de Trade Marketing</p>
+    <div class="ficha">
+      <p><span>Estudiantes</span>Aranibar Rivera José Fernando · Huanca Cayo Nobelia Jhannel · Severiche Socore Edilberto · Rasguido Martínez Jhosselyn</p>
+      <p><span>Docente</span>Diego Rodrigo Flores Alfaro</p>
+      <p>Los datos son simulados con fines académicos y no corresponden a información comercial de la empresa.</p>
+    </div>
+    <div class="barra-modo">
+      <button class="btn" id="btnPresentar">Iniciar presentación</button>
+      <button class="btn claro" id="btnReset">Restablecer datos</button>
+    </div>
+  </div>
+</header>
+
+<div class="envoltura">
+
+<section class="paso" id="paso-1">
+  <h2><span class="num">1.</span> Los datos como matriz</h2>
+  <p class="guia">Cada fila es un punto de venta y cada columna un día de la semana. El valor 1 indica atención realizada y 0 atención no realizada. Toca cualquier celda para modificarla, o cambia el tamaño de la matriz: todo lo que sigue se recalcula.</p>
+  <div class="controles">
+    <label for="escenario">Escenario</label>
+    <select id="escenario">
+      <option value="base">Semana base</option>
+      <option value="buena">Semana buena</option>
+      <option value="critica">Semana crítica</option>
+      <option value="ausente">Reponedor ausente</option>
+      <option value="informe">Ejemplo del informe (3×3)</option>
+    </select>
+    <label for="nFilas">PDV</label>
+    <input type="number" id="nFilas" value="5" min="2" max="8">
+    <label for="nCols">Días</label>
+    <input type="number" id="nCols" value="5" min="2" max="8">
+  </div>
+  <div class="tablero">
+    <figure class="matriz-caja" style="margin:0">
+      <figcaption>Matriz P — planificación (visitas programadas)</figcaption>
+      <div class="scrollx" id="tablaP"></div>
+    </figure>
+    <figure class="matriz-caja" style="margin:0">
+      <figcaption>Matriz E — ejecución (visitas realizadas)</figcaption>
+      <div class="scrollx" id="tablaE"></div>
+    </figure>
+  </div>
+
+  <h3>Leerla por filas: atenciones por punto de venta</h3>
+  <ul class="filas-vector" id="vectorFilas"></ul>
+  <div class="formula" id="texFilas"></div>
+
+  <h3>Leerla por columnas: atenciones por día</h3>
+  <p class="guia">Operar sobre la transpuesta responde una pregunta distinta con el mismo dato: qué día de la semana se cae la ruta.</p>
+  <ul class="filas-vector" id="vectorCols"></ul>
+  <div class="formula" id="texCols"></div>
+</section>
+
+<section class="paso" id="paso-2">
+  <h2><span class="num">2.</span> La brecha: D = P − E</h2>
+  <p class="guia">La resta de matrices deja al descubierto qué visitas se planificaron y no se ejecutaron. Cada 1 en rojo es una visita perdida, ubicada en su punto de venta y en su día.</p>
+  <div class="operacion" id="texResta"></div>
+  <div class="scrollx" id="tablaD"></div>
+  <p class="vector" id="totalBrecha"></p>
+</section>
+
+<section class="paso" id="paso-3">
+  <h2><span class="num">3.</span> Indicadores de control</h2>
+  <p class="guia">Cumplimiento mide visitas; cobertura mide puntos de venta alcanzados al menos una vez. Son cosas distintas: se puede tener cobertura alta y cumplimiento bajo.</p>
+  <div class="indicadores">
+    <div class="indicador">
+      <span class="nombre">Cumplimiento</span>
+      <span class="cifra" id="cifraCump"></span>
+      <span class="detalle" id="detCump"></span>
+      <div class="formula" id="formCump"></div>
+    </div>
+    <div class="indicador">
+      <span class="nombre">Cobertura</span>
+      <span class="cifra" id="cifraCob"></span>
+      <span class="detalle" id="detCob"></span>
+      <div class="formula" id="formCob"></div>
+    </div>
+  </div>
+
+  <h3>Comparación por reponedor</h3>
+  <p class="guia">Los puntos de venta se reparten entre tres reponedores. Cada submatriz de E genera su propio vector, y comparar esos vectores indica sobre qué ruta hay que actuar.</p>
+  <ul class="filas-vector" id="vectorRep"></ul>
+  <p class="vector" id="repDetalle"></p>
+
+  <h3>Comprobación contra el informe</h3>
+  <p class="guia">Los dos casos numéricos del documento escrito, para contrastarlos con lo que calcula la web.</p>
+  <div class="formula" id="verifCump"></div>
+  <div class="formula" id="verifCob"></div>
+
+  <h3>Acumular y ponderar</h3>
+  <p class="guia">Sumar dos semanas acumula el mes. Multiplicar por un escalar k pondera la matriz cuando no todos los puntos de venta pesan igual comercialmente.</p>
+  <div class="tablero">
+    <figure class="matriz-caja" style="margin:0">
+      <figcaption>Semana 2, datos de ejemplo</figcaption>
+      <div class="scrollx" id="tablaS2"></div>
+    </figure>
+    <figure class="matriz-caja" style="margin:0">
+      <figcaption>Suma acumulada (valores de 0 a 2)</figcaption>
+      <div class="scrollx" id="tablaSuma"></div>
+    </figure>
+  </div>
+  <div class="controles" style="margin-top:22px">
+    <label for="escalar">Valor de k</label>
+    <input type="range" id="escalar" min="1" max="3" step="0.5" value="2">
+    <span class="vector" id="kTxt" style="margin:0"></span>
+  </div>
+  <div class="formula" id="formEscalar"></div>
+  <div class="scrollx" id="tablaK"></div>
+</section>
+
+<section class="paso" id="paso-4">
+  <h2><span class="num">4.</span> La matriz como sistema</h2>
+  <p class="guia">Dos reponedores realizaron 20 visitas entre ambos, y una segunda relación entre sus recorridos completa el sistema. Acá la matriz deja de ser una tabla de datos y pasa a resolverse por operaciones elementales de fila. Puedes cambiar los coeficientes.</p>
+  <div class="controles">
+    <input type="number" id="ca" value="1" aria-label="coeficiente a"> x +
+    <input type="number" id="cb" value="1" aria-label="coeficiente b"> y =
+    <input type="number" id="ce" value="20" aria-label="término independiente 1">
+  </div>
+  <div class="controles">
+    <input type="number" id="cc" value="2" aria-label="coeficiente c"> x +
+    <input type="number" id="cd" value="1" aria-label="coeficiente d"> y =
+    <input type="number" id="cf" value="30" aria-label="término independiente 2">
+  </div>
+  <div class="controles" style="margin-top:20px">
+    <button class="btn" id="btnGauss">Aplicar siguiente operación</button>
+    <button class="btn oscuro" id="btnGaussReset">Volver al inicio</button>
+  </div>
+  <div id="gauss"></div>
+  <div class="aviso" id="avisoSingular" hidden>El determinante es cero, así que el sistema no tiene solución única. Cambia algún coeficiente para continuar.</div>
+
+  <h3>El determinante decide si hay solución</h3>
+  <p class="guia">El determinante de una matriz de segundo orden es ad − bc. No es un cálculo decorativo: si vale cero, las dos ecuaciones describen la misma relación y no se puede separar cuántas visitas hizo cada reponedor.</p>
+  <div class="operacion" id="texDet"></div>
+  <p id="lecturaDet"></p>
+</section>
+
+<section class="paso" id="paso-5">
+  <h2><span class="num">5.</span> De la marcación al control</h2>
+  <p class="guia">El recorrido completo del modelo, con los valores actuales de la demostración.</p>
+  <div class="cadena">
+    <i>WeTrade</i><s>→</s><i>Datos</i><s>→</s><i>Vectores</i><s>→</s><i>Matrices</i><s>→</s><i>Operaciones</i><s>→</s><i>Indicadores</i><s>→</s><i class="fin">Control</i>
+  </div>
+  <div class="indicadores">
+    <div class="indicador"><span class="nombre">Cumplimiento</span><span class="cifra" id="finCump"></span></div>
+    <div class="indicador"><span class="nombre">Cobertura</span><span class="cifra" id="finCob"></span></div>
+    <div class="indicador"><span class="nombre">Visitas perdidas</span><span class="cifra" id="finBrecha"></span></div>
+  </div>
+  <p class="guia" style="margin-top:26px">Una lista de marcaciones no muestra el patrón. La misma información puesta en matrices sí permite comparar lo planificado con lo ejecutado, ubicar los puntos pendientes y decidir sobre qué ruta actuar.</p>
+</section>
+
+</div>
+
+<nav class="navpaso" aria-label="Navegación de la presentación">
+  <button id="anterior">Anterior</button>
+  <span class="cuenta" id="cuenta"></span>
+  <button id="siguiente">Siguiente</button>
+  <button id="salir">Salir</button>
+</nav>
+
+<script>
+"use strict";
+var nF = 5, nC = 5;
+var PDV = [], DIAS = [];
+var NOMBRES_REP = ["Reponedor A","Reponedor B","Reponedor C"];
+
+function etiquetas(){
+  PDV = []; DIAS = [];
+  for(var i=0;i<nF;i++){ PDV.push("PDV " + (i+1)); }
+  for(var j=0;j<nC;j++){ DIAS.push("D" + (j+1)); }
+}
+function llena(f,c,v){
+  var m = [];
+  for(var i=0;i<f;i++){ var fila=[]; for(var j=0;j<c;j++){ fila.push(v); } m.push(fila); }
+  return m;
+}
+function matrizSemana2(){
+  var m = [];
+  for(var i=0;i<nF;i++){
+    var fila=[];
+    for(var j=0;j<nC;j++){ fila.push(((i*3 + j*2) % 5 === 0) ? 0 : 1); }
+    m.push(fila);
+  }
+  return m;
+}
+function grupos(n){
+  var g = [[],[],[]], base = Math.floor(n/3), resto = n % 3, idx = 0;
+  for(var k=0;k<3;k++){
+    var cant = base + (k < resto ? 1 : 0);
+    for(var t=0;t<cant;t++){ g[k].push(idx++); }
+  }
+  return g;
+}
+function copiar(m){ return m.map(function(f){ return f.slice(); }); }
+
+var ESCENARIOS = {
+  base:{f:5, c:5, P:llena(5,5,1),
+    E:[[1,1,1,0,1],[1,0,1,1,1],[1,1,0,1,0],[1,1,1,1,1],[1,0,1,1,0]]},
+  buena:{f:5, c:5, P:llena(5,5,1),
+    E:[[1,1,1,1,1],[1,1,1,0,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,0,1,1]]},
+  critica:{f:5, c:5, P:llena(5,5,1),
+    E:[[1,0,1,0,0],[1,0,0,1,0],[0,0,0,0,0],[1,1,0,0,1],[0,1,0,0,0]]},
+  ausente:{f:5, c:5, P:llena(5,5,1),
+    E:[[1,1,1,0,1],[1,0,1,1,1],[0,0,0,0,0],[0,0,0,0,0],[1,0,1,1,0]]},
+  informe:{f:3, c:3, P:llena(3,3,1),
+    E:[[1,1,0],[1,0,1],[1,1,0]]}
+};
+
+var P = copiar(ESCENARIOS.base.P);
+var E = copiar(ESCENARIOS.base.E);
+etiquetas();
+
+function cargarEscenario(clave){
+  var s = ESCENARIOS[clave];
+  nF = s.f; nC = s.c;
+  etiquetas();
+  P = copiar(s.P); E = copiar(s.E);
+  document.getElementById("nFilas").value = nF;
+  document.getElementById("nCols").value = nC;
+}
+function redimensionar(f,c){
+  f = Math.max(2, Math.min(8, f || nF));
+  c = Math.max(2, Math.min(8, c || nC));
+  var nuevaP = llena(f,c,1), nuevaE = llena(f,c,1);
+  for(var i=0;i<f;i++){
+    for(var j=0;j<c;j++){
+      if(P[i] && P[i][j] !== undefined){ nuevaP[i][j] = P[i][j]; nuevaE[i][j] = E[i][j]; }
+    }
+  }
+  nF = f; nC = c; etiquetas();
+  P = nuevaP; E = nuevaE;
+}
+
+var pendientes = [];
+function tex(destino, latex, plano, enBloque){
+  var el = (typeof destino === "string") ? document.getElementById(destino) : destino;
+  if(!el) return;
+  el.textContent = plano;
+  if(window.katex){
+    try{ katex.render(latex, el, {throwOnError:false, displayMode: enBloque !== false}); }
+    catch(err){ el.textContent = plano; }
+  } else {
+    pendientes.push([el, latex, plano, enBloque]);
+  }
+}
+function renderPendientes(){
+  if(!window.katex) return;
+  var lista = pendientes.slice();
+  pendientes.length = 0;
+  lista.forEach(function(p){ tex(p[0], p[1], p[2], p[3]); });
+}
+function mtx(m){
+  return "\\begin{bmatrix}" + m.map(function(f){ return f.join(" & "); }).join(" \\\\ ") + "\\end{bmatrix}";
+}
+function nfmt(v){ return Number.isInteger(v) ? String(v) : v.toFixed(2); }
+
+function tabla(destino, datos, o){
+  o = o || {};
+  var t = document.createElement("table");
+  t.className = "matriz";
+  var thead = document.createElement("thead");
+  var hr = document.createElement("tr");
+  hr.appendChild(document.createElement("th"));
+  DIAS.forEach(function(d,j){
+    var th = document.createElement("th"); th.scope="col"; th.textContent=d;
+    th.setAttribute("data-col", j); hr.appendChild(th);
+  });
+  thead.appendChild(hr); t.appendChild(thead);
+  var tb = document.createElement("tbody");
+  datos.forEach(function(fila,i){
+    var tr = document.createElement("tr");
+    var th = document.createElement("th"); th.scope="row"; th.textContent = PDV[i];
+    th.setAttribute("data-fila", i); tr.appendChild(th);
+    fila.forEach(function(v,j){
+      var td = document.createElement("td");
+      var cel;
+      if(o.editable){
+        cel = document.createElement("button");
+        cel.type = "button";
+        cel.setAttribute("aria-label", PDV[i]+", "+DIAS[j]+", valor "+v);
+        cel.addEventListener("click", function(){ o.alClic(i,j); });
+      } else {
+        cel = document.createElement("div");
+      }
+      cel.className = "celda" + (o.marcarUno && v===1 ? (o.rojo ? " falta" : " uno") : "");
+      cel.textContent = o.formato ? o.formato(v) : v;
+      cel.setAttribute("data-fila", i);
+      cel.setAttribute("data-col", j);
+      td.appendChild(cel); tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  cruz(t);
+  destino.replaceChildren(t);
+}
+
+function cruz(t){
+  function marcar(i, j, on){
+    var todos = t.querySelectorAll("[data-fila],[data-col]");
+    Array.prototype.forEach.call(todos, function(el){
+      var ef = el.getAttribute("data-fila"), ec = el.getAttribute("data-col");
+      var toca = (ef !== null && ef === i) || (ec !== null && ec === j);
+      if(!on || !toca){ el.classList.remove("eje"); }
+      else { el.classList.add("eje"); }
+    });
+  }
+  t.addEventListener("mouseover", function(ev){
+    var c = ev.target.closest("[data-fila][data-col]");
+    if(c) marcar(c.getAttribute("data-fila"), c.getAttribute("data-col"), true);
+  });
+  t.addEventListener("mouseleave", function(){ marcar(null, null, false); });
+  t.addEventListener("focusin", function(ev){
+    var c = ev.target.closest("[data-fila][data-col]");
+    if(c) marcar(c.getAttribute("data-fila"), c.getAttribute("data-col"), true);
+  });
+}
+
+function barras(destino, items, maximo){
+  destino.replaceChildren();
+  items.forEach(function(it){
+    var li = document.createElement("li");
+    var etq = document.createElement("span"); etq.className="etq"; etq.textContent = it.etiqueta;
+    var med = document.createElement("span"); med.className="medidor";
+    var barra = document.createElement("span"); barra.style.width = (maximo ? (it.valor/maximo*100) : 0) + "%";
+    med.appendChild(barra);
+    var val = document.createElement("span"); val.className="val"; val.textContent = it.texto;
+    li.appendChild(etq); li.appendChild(med); li.appendChild(val);
+    destino.appendChild(li);
+  });
+}
+
+function sumaFila(f){ return f.reduce(function(a,b){ return a+b; }, 0); }
+function suma(m){ return m.reduce(function(a,f){ return a + sumaFila(f); }, 0); }
+
+function recalcular(){
+  tabla(document.getElementById("tablaP"), P, {
+    editable:true, marcarUno:true,
+    alClic:function(i,j){ P[i][j] = P[i][j] ? 0 : 1; if(!P[i][j]) E[i][j] = 0; recalcular(); }
+  });
+  tabla(document.getElementById("tablaE"), E, {
+    editable:true, marcarUno:true,
+    alClic:function(i,j){ if(!P[i][j]) return; E[i][j] = E[i][j] ? 0 : 1; recalcular(); }
+  });
+
+  var vf = E.map(sumaFila);
+  var vc = DIAS.map(function(_,j){ return E.reduce(function(a,f){ return a + f[j]; }, 0); });
+  barras(document.getElementById("vectorFilas"),
+    vf.map(function(v,i){ return {etiqueta:PDV[i], valor:v, texto:v + " de " + sumaFila(P[i])}; }), nC);
+  tex("texFilas",
+    "\\vec{v}_{\\text{PDV}} = " + mtx([vf]),
+    "Vector de frecuencia = [" + vf.join(", ") + "]");
+  barras(document.getElementById("vectorCols"),
+    vc.map(function(v,j){ return {etiqueta:DIAS[j], valor:v, texto:v + " de " + nF}; }), nF);
+  tex("texCols",
+    "\\vec{v}_{\\text{d\\acute{\\imath}a}} = " + mtx([vc]),
+    "Vector por día = [" + vc.join(", ") + "]");
+
+  var D = P.map(function(f,i){ return f.map(function(v,j){ return v - E[i][j]; }); });
+  tex("texResta",
+    "D = P - E = " + mtx(P) + " - " + mtx(E) + " = " + mtx(D),
+    "D = P - E");
+  tabla(document.getElementById("tablaD"), D, {marcarUno:true, rojo:true});
+  var perdidas = suma(D);
+  document.getElementById("totalBrecha").textContent =
+    "Visitas planificadas no ejecutadas: " + perdidas + " de " + suma(P);
+
+  var plan = suma(P), ejec = suma(E);
+  var cump = plan ? ejec/plan*100 : 0;
+  var pdvPlan = P.filter(function(f){ return sumaFila(f) > 0; }).length;
+  var pdvAtend = E.filter(function(f){ return sumaFila(f) > 0; }).length;
+  var cob = pdvPlan ? pdvAtend/pdvPlan*100 : 0;
+
+  document.getElementById("cifraCump").textContent = cump.toFixed(1) + "%";
+  document.getElementById("detCump").textContent = ejec + " de " + plan + " visitas ejecutadas";
+  tex("formCump",
+    "\\text{Cumplimiento} = \\frac{\\text{ejecutadas}}{\\text{planificadas}} \\times 100 = \\frac{" +
+      ejec + "}{" + plan + "} \\times 100 = " + cump.toFixed(1) + "\\%",
+    "Cumplimiento = (" + ejec + "/" + plan + ") x 100 = " + cump.toFixed(1) + "%");
+
+  document.getElementById("cifraCob").textContent = cob.toFixed(1) + "%";
+  document.getElementById("detCob").textContent = pdvAtend + " de " + pdvPlan + " puntos con al menos una atención";
+  tex("formCob",
+    "\\text{Cobertura} = \\frac{\\text{PDV atendidos}}{\\text{PDV planificados}} \\times 100 = \\frac{" +
+      pdvAtend + "}{" + pdvPlan + "} \\times 100 = " + cob.toFixed(1) + "\\%",
+    "Cobertura = (" + pdvAtend + "/" + pdvPlan + ") x 100 = " + cob.toFixed(1) + "%");
+
+  var datosRep = [];
+  grupos(nF).forEach(function(filas, k){
+    if(!filas.length) return;
+    var p = filas.reduce(function(a,i){ return a + sumaFila(P[i]); }, 0);
+    var e = filas.reduce(function(a,i){ return a + sumaFila(E[i]); }, 0);
+    datosRep.push({nombre:NOMBRES_REP[k], p:p, e:e, pct: p ? e/p*100 : 0,
+      pdv:filas.map(function(i){ return PDV[i]; }).join(", ")});
+  });
+  barras(document.getElementById("vectorRep"),
+    datosRep.map(function(r){ return {etiqueta:r.nombre.replace("Reponedor ","Rep. "), valor:r.pct, texto:r.pct.toFixed(0) + "%"}; }), 100);
+  document.getElementById("repDetalle").textContent =
+    datosRep.map(function(r){ return r.nombre + " (" + r.pdv + "): " + r.e + "/" + r.p; }).join("   -   ");
+
+  var s2 = matrizSemana2();
+  tabla(document.getElementById("tablaS2"), s2, {marcarUno:true});
+  var acum = E.map(function(f,i){ return f.map(function(v,j){ return v + s2[i][j]; }); });
+  tabla(document.getElementById("tablaSuma"), acum, {});
+
+  var k = parseFloat(document.getElementById("escalar").value);
+  document.getElementById("kTxt").textContent = "k = " + k;
+  tex("formEscalar",
+    "k\\,E \\quad\\text{con}\\quad k = " + k + ", \\quad \\sum k\\,E = " + (suma(E)*k).toFixed(1),
+    "kE con k = " + k + ", suma ponderada = " + (suma(E)*k).toFixed(1));
+  tabla(document.getElementById("tablaK"), E.map(function(f){ return f.map(function(v){ return v*k; }); }),
+    {formato: function(v){ return (v % 1 ? v.toFixed(1) : String(v)); }});
+
+  document.getElementById("finCump").textContent = cump.toFixed(1) + "%";
+  document.getElementById("finCob").textContent = cob.toFixed(1) + "%";
+  document.getElementById("finBrecha").textContent = perdidas;
+}
+
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+var pasoGauss = 0;
+
+function ampliadaTex(m){
+  return "\\left[\\begin{array}{cc|c} " +
+    nfmt(m[0][0]) + " & " + nfmt(m[0][1]) + " & " + nfmt(m[0][2]) + " \\\\ " +
+    nfmt(m[1][0]) + " & " + nfmt(m[1][1]) + " & " + nfmt(m[1][2]) +
+    " \\end{array}\\right]";
+}
+function ampliadaPlano(m){
+  return "[ " + m[0].map(nfmt).join("  ") + " ] [ " + m[1].map(nfmt).join("  ") + " ]";
+}
+
+function construirGauss(){
+  var a = num("ca"), b = num("cb"), e = num("ce");
+  var c = num("cc"), d = num("cd"), f = num("cf");
+  var det = a*d - b*c;
+
+  tex("texDet",
+    "\\det A = \\begin{vmatrix} " + a + " & " + b + " \\\\ " + c + " & " + d +
+      " \\end{vmatrix} = ad - bc = (" + a + ")(" + d + ") - (" + b + ")(" + c + ") = " + nfmt(det),
+    "det A = ad - bc = (" + a + ")(" + d + ") - (" + b + ")(" + c + ") = " + nfmt(det));
+
+  document.getElementById("lecturaDet").textContent = det !== 0
+    ? "El determinante es distinto de cero, por lo tanto el sistema tiene solución única y la matriz de coeficientes es invertible."
+    : "El determinante es cero: la matriz no es invertible y el sistema no tiene solución única.";
+  document.getElementById("avisoSingular").hidden = det !== 0;
+
+  var pasos = [{op:"Matriz ampliada del sistema", m:[[a,b,e],[c,d,f]]}];
+
+  if(det !== 0 && a !== 0){
+    var m = [[1, b/a, e/a],[c,d,f]];
+    pasos.push({op:"F_1 \\to \\frac{1}{" + a + "}F_1", plano:"F1 -> F1 / " + a, m:copiar(m)});
+    var f1 = m[1][0];
+    m = [m[0], [0, m[1][1] - f1*m[0][1], m[1][2] - f1*m[0][2]]];
+    pasos.push({op:"F_2 \\to F_2 - (" + nfmt(f1) + ")F_1", plano:"F2 -> F2 - (" + nfmt(f1) + ")F1", m:copiar(m)});
+    var piv = m[1][1];
+    m = [m[0], [0, 1, m[1][2]/piv]];
+    pasos.push({op:"F_2 \\to \\frac{1}{" + nfmt(piv) + "}F_2", plano:"F2 -> F2 / (" + nfmt(piv) + ")", m:copiar(m)});
+    var f2 = m[0][1];
+    m = [[1, 0, m[0][2] - f2*m[1][2]], m[1]];
+    pasos.push({
+      op:"F_1 \\to F_1 - (" + nfmt(f2) + ")F_2",
+      plano:"F1 -> F1 - (" + nfmt(f2) + ")F2",
+      m:copiar(m),
+      sol:"x = " + nfmt(m[0][2]) + ",  y = " + nfmt(m[1][2]) + "  (visitas de cada reponedor)"
+    });
+  }
+
+  if(pasoGauss >= pasos.length) pasoGauss = pasos.length - 1;
+  var cont = document.getElementById("gauss");
+  cont.replaceChildren();
+  pasos.slice(0, pasoGauss + 1).forEach(function(p,i){
+    var div = document.createElement("div");
+    div.className = "gauss-paso" + (i === pasoGauss ? " activo" : "");
+    var op = document.createElement("div"); op.className = "gauss-op";
+    if(p.plano){ tex(op, p.op, p.plano, false); } else { op.textContent = p.op; }
+    var caja = document.createElement("div"); caja.className = "gauss-mat";
+    tex(caja, ampliadaTex(p.m), ampliadaPlano(p.m));
+    div.appendChild(op); div.appendChild(caja);
+    if(p.sol){
+      var s = document.createElement("p");
+      s.style.fontFamily = "'IBM Plex Mono',monospace";
+      s.textContent = p.sol;
+      div.appendChild(s);
+    }
+    cont.appendChild(div);
+  });
+  document.getElementById("btnGauss").disabled = pasoGauss >= pasos.length - 1;
+}
+
+var secciones = Array.prototype.slice.call(document.querySelectorAll(".paso"));
+var actual = 0;
+
+function mostrarPaso(){
+  secciones.forEach(function(s,i){ s.classList.toggle("actual", i === actual); });
+  document.getElementById("cuenta").textContent = (actual+1) + " / " + secciones.length;
+  document.getElementById("anterior").disabled = actual === 0;
+  document.getElementById("siguiente").disabled = actual === secciones.length - 1;
+  window.scrollTo(0,0);
+}
+function presentar(activo){
+  document.body.classList.toggle("presentando", activo);
+  if(activo){ actual = 0; mostrarPaso(); }
+  else { secciones.forEach(function(s){ s.classList.remove("actual"); }); }
+}
+
+document.getElementById("btnPresentar").addEventListener("click", function(){ presentar(true); });
+document.getElementById("salir").addEventListener("click", function(){ presentar(false); });
+document.getElementById("anterior").addEventListener("click", function(){ if(actual>0){actual--;mostrarPaso();} });
+document.getElementById("siguiente").addEventListener("click", function(){ if(actual<secciones.length-1){actual++;mostrarPaso();} });
+document.addEventListener("keydown", function(ev){
+  if(!document.body.classList.contains("presentando")) return;
+  var t = ev.target.tagName;
+  if(t === "INPUT" || t === "SELECT") return;
+  if(ev.key === "ArrowRight" && actual < secciones.length-1){ actual++; mostrarPaso(); }
+  if(ev.key === "ArrowLeft" && actual > 0){ actual--; mostrarPaso(); }
+  if(ev.key === "Escape") presentar(false);
+});
+document.getElementById("escenario").addEventListener("change", function(ev){
+  cargarEscenario(ev.target.value); recalcular();
+});
+["nFilas","nCols"].forEach(function(id){
+  document.getElementById(id).addEventListener("change", function(){
+    redimensionar(parseInt(document.getElementById("nFilas").value,10),
+                  parseInt(document.getElementById("nCols").value,10));
+    document.getElementById("nFilas").value = nF;
+    document.getElementById("nCols").value = nC;
+    recalcular();
+  });
+});
+document.getElementById("btnReset").addEventListener("click", function(){
+  document.getElementById("escenario").value = "base";
+  cargarEscenario("base");
+  document.getElementById("escalar").value = 2;
+  pasoGauss = 0;
+  var ids = ["ca","cb","ce","cc","cd","cf"], vals = [1,1,20,2,1,30];
+  ids.forEach(function(id,i){ document.getElementById(id).value = vals[i]; });
+  recalcular(); construirGauss();
+});
+document.getElementById("escalar").addEventListener("input", recalcular);
+document.getElementById("btnGauss").addEventListener("click", function(){ pasoGauss++; construirGauss(); });
+document.getElementById("btnGaussReset").addEventListener("click", function(){ pasoGauss = 0; construirGauss(); });
+["ca","cb","ce","cc","cd","cf"].forEach(function(id){
+  document.getElementById(id).addEventListener("input", function(){ pasoGauss = 0; construirGauss(); });
+});
+
+tex("verifCump", "\\text{Cumplimiento} = \\frac{17}{20} \\times 100 = 85\\%", "Cumplimiento = 17/20 x 100 = 85%");
+tex("verifCob", "\\text{Cobertura} = \\frac{27}{30} \\times 100 = 90\\%", "Cobertura = 27/30 x 100 = 90%");
+
+recalcular();
+construirGauss();
+window.addEventListener("load", function(){ renderPendientes(); recalcular(); construirGauss(); });
+</script>
+</body>
+</html>

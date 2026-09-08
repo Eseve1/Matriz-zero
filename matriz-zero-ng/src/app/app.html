@@ -1,0 +1,369 @@
+<!--
+  Este archivo ha sido reestructurado para seguir una narrativa más impactante:
+  1. Resumen Gerencial (KPIs) primero.
+  2. Evidencia y Desglose (Matrices) después.
+  3. Aplicaciones matemáticas avanzadas al final.
+-->
+
+<!-- Header de Portada (Oculto en modo presentación) -->
+<header class="portada">
+  <div class="envoltura">
+    <p class="institucion">Universidad UCATEC · Álgebra Lineal y Matricial · Competencia 2026</p>
+    <h1>Análisis Matricial de un Proceso Industrial Automatizado</h1>
+    <p class="subtitulo">Caso de Estudio: Sistema de Control de Trade Marketing (Industrias Venado S.A.)</p>
+    <div class="ficha">
+      <p><span>Estudiantes</span>Aranibar Rivera José Fernando · Huanca Cayo Nobelia Jhannel · Severiche Socore Edilberto · Rasguido Martínez Jhosselyn</p>
+      <p><span>Docente</span>Diego Rodrigo Flores Alfaro</p>
+      <p style="color: var(--dato); font-weight: 600;">Implementación: Modelo matemático en vivo conectado a datos reales vía API RESTful (GCP).</p>
+    </div>
+    <div class="barra-modo">
+      <button class="btn claro" (click)="restablecerValores()">Restablecer datos</button>
+    </div>
+  </div>
+</header>
+
+<div class="envoltura">
+
+  <!-- Estado de carga y errores -->
+  @if (loading) {
+    <div class="aviso-carga">
+      <span class="spinner">⏳</span>
+      Consultando y procesando datos del sistema en BigQuery...
+    </div>
+  }
+  @if (error) {
+    <div class="aviso error">{{ error }}</div>
+  }
+
+  <!-- Filtros de Control del Proceso -->
+  <div class="controles-principales">
+    <div class="control-grupo">
+      <label for="selReponedor">Operador del Sistema</label>
+      <!-- Usaremos un input para el autocomplete en el futuro -->
+      <select id="selReponedor" [(ngModel)]="reponedorSeleccionado" (change)="cargarMatriz()">
+        <option value="" disabled>-- Seleccione un operador --</option>
+        @for (rep of reponedores; track rep.nombre) {
+          <option [value]="rep.nombre">{{ rep.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="control-grupo">
+      <label for="selFecha">Período de Análisis</label>
+      <select id="selFecha" [(ngModel)]="fechaSeleccionada" (change)="cargarMatriz()">
+        @for (s of SEMANAS; track s.valor) {
+          <option [value]="s.valor">{{ s.etiqueta }}</option>
+        }
+      </select>
+      @if (actualizando) {
+        <span class="chip-actualizando">actualizando…</span>
+      }
+    </div>
+  </div>
+
+  <!-- PASO 1 (NUEVO): Resumen Gerencial y KPIs -->
+  <section class="paso">
+    <h2><span class="num">1.</span> Resumen de Estabilidad y Funcionamiento</h2>
+    <p class="guia">
+      Indicadores clave (KPIs) que miden la salud del proceso para el operador y período seleccionados.
+      El cumplimiento mide la eficiencia en la ejecución, mientras que la cobertura mide el alcance del servicio.
+    </p>
+    <p class="guia formula-kpi">
+      <code>Cumplimiento = (Σ E / Σ P) × 100</code> &nbsp;·&nbsp;
+      <code>Cobertura = (nodos atendidos / nodos planificados) × 100</code>
+    </p>
+    <div class="indicadores kpi-principales">
+      <div class="indicador">
+        <span class="nombre">Cumplimiento del Plan</span>
+        <span class="cifra">{{ cump | number:'1.1-1' }}%</span>
+        <span class="detalle">{{ totalEjecutadas | number }} de {{ totalPlanificadas | number }} tareas ejecutadas</span>
+      </div>
+      <div class="indicador">
+        <span class="nombre">Cobertura de Nodos</span>
+        <span class="cifra">{{ cob | number:'1.1-1' }}%</span>
+        <span class="detalle">{{ totalPdvAtendidos | number }} de {{ totalPdvPlanificados | number }} nodos atendidos</span>
+      </div>
+      <div class="indicador">
+        <span class="nombre">Cumplimiento Efectivo</span>
+        <span class="cifra">{{ cumpEfectivo | number:'1.1-1' }}%</span>
+        <span class="detalle">{{ incompletas | number }} visitas no alcanzaron el mínimo de minutos</span>
+      </div>
+      <div class="indicador">
+        <span class="nombre">Fallos del Proceso</span>
+        <span class="cifra" [style.color]="perdidas > 0 ? 'var(--falta)' : 'var(--dato)'">{{ perdidas | number }}</span>
+        <span class="detalle">Tareas planificadas no ejecutadas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASO 2 (NUEVO): Desglose Matricial -->
+  <section class="paso">
+    <h2><span class="num">2.</span> Desglose Matricial del Proceso</h2>
+    <p class="guia">
+      Representación visual del estado del sistema. La Matriz de Planificación (P) muestra el estado ideal, mientras que la
+      Matriz de Ejecución (E) muestra el estado real observado, utilizando un código de colores para una interpretación instantánea.
+    </p>
+
+    @if (P.length > 0) {
+      <div class="tablero">
+        <figure class="matriz-caja" style="margin:0">
+          <figcaption>Matriz P — Planificación (Estado Ideal)</figcaption>
+          <div class="scrollx">
+            <table class="matriz">
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (dia of DIAS; track dia) {
+                    <th scope="col">{{ dia.substring(0, 3) }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (cliente of PDV; track cliente; let i = $index) {
+                  <tr>
+                    <th scope="row">{{ cliente }}</th>
+                    @for (dia of DIAS; track dia; let j = $index) {
+                      <td>
+                        <div class="celda" [class.uno]="P[i][j] === 1">{{ P[i][j] }}</div>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </figure>
+
+        <figure class="matriz-caja" style="margin:0">
+          <figcaption>Matriz E — Ejecución (Estado Real Observado)</figcaption>
+          <div class="scrollx">
+            <table class="matriz">
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (dia of DIAS; track dia) {
+                    <th scope="col">{{ dia.substring(0, 3) }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (cliente of PDV; track cliente; let i = $index) {
+                  <tr>
+                    <th scope="row">{{ cliente }}</th>
+                    @for (dia of DIAS; track dia; let j = $index) {
+                      <td>
+                        <div class="celda-estado" [ngClass]="getClaseEstado(E_estado[i][j])"
+                             [title]="E_estado[i][j]">{{ E[i][j] }}</div>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="leyenda">
+            <span class="leyenda-item"><span class="circulo estado-visitada"></span> Visitada</span>
+            <span class="leyenda-item"><span class="circulo estado-no-visitada"></span> No Visitada</span>
+            <span class="leyenda-item"><span class="circulo estado-incompleta"></span> Incompleta</span>
+            <span class="leyenda-item"><span class="circulo estado-no-planificada"></span> Fuera de Plan</span>
+          </div>
+        </figure>
+      </div>
+
+      @if (notaMetodologica) {
+        <p class="nota-metodo"><strong>Nota metodológica:</strong> {{ notaMetodologica }}</p>
+      }
+
+      <h3>Análisis de Brecha (D = P - E)</h3>
+      <p class="guia">La resta de las matrices numéricas P y E revela los puntos de fallo exactos del proceso.</p>
+      <div class="operacion" id="texResta"></div>
+    }
+  </section>
+
+  <!-- PASO 3: Aplicaciones del Modelo -->
+  <section class="paso">
+    <h2><span class="num">3.</span> Aplicaciones del Modelo Matricial</h2>
+    <p class="guia">El modelo permite aplicar transformaciones y análisis para responder a distintas preguntas de negocio sobre el mismo conjunto de datos.</p>
+    
+    <h3>Análisis Vectorial de Funcionamiento</h3>
+    <p class="guia">Agrupar por filas (vector PDV) muestra el rendimiento por cada nodo. Agrupar por columnas (vector Día) muestra la estabilidad del proceso a lo largo de la semana.</p>
+    <div class="tablero">
+        <div class="matriz-caja">
+          <ul class="filas-vector">
+            @for (cliente of PDV; track cliente; let i = $index) {
+              <li>
+                <span class="etq">{{ cliente }}</span>
+                <span class="medidor"><span [style.width.%]="(vf[i] / nC) * 100"></span></span>
+                <span class="val">{{ vf[i] }} de {{ nC }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+        <div class="matriz-caja">
+          <ul class="filas-vector">
+            @for (dia of DIAS; track dia; let j = $index) {
+              <li>
+                <span class="etq">{{ dia }}</span>
+                <span class="medidor"><span [style.width.%]="(vc[j] / nF) * 100"></span></span>
+                <span class="val">{{ vc[j] }} de {{ nF }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+    </div>
+    
+    <h3>Ponderación Estratégica (Transformación Lineal)</h3>
+    <p class="guia">Multiplicar la matriz de ejecución por un escalar `k` permite ponderar el resultado. Esto es útil para dar más peso a visitas en nodos de control estratégicos o de mayor volumen de venta.</p>
+    <div class="controles">
+      <label for="escalar">Valor del escalar k:</label>
+      <input type="range" id="escalar" min="1" max="5" step="0.5" [(ngModel)]="k" (input)="recalcularTodo()">
+      <span class="vector" style="margin:0;">k = {{ k }}</span>
+    </div>
+    <div class="formula" id="formEscalar"></div>
+
+    @if (kE.length > 0) {
+      <figure class="matriz-caja" style="margin:16px 0 0">
+        <figcaption>Matriz kE — Ejecución ponderada (k = {{ k }})</figcaption>
+        <div class="scrollx">
+          <table class="matriz">
+            <thead>
+              <tr>
+                <th></th>
+                @for (dia of DIAS; track dia) { <th scope="col">{{ dia.substring(0, 3) }}</th> }
+              </tr>
+            </thead>
+            <tbody>
+              @for (cliente of PDV; track cliente; let i = $index) {
+                <tr>
+                  <th scope="row">{{ cliente }}</th>
+                  @for (dia of DIAS; track dia; let j = $index) {
+                    <td><div class="celda" [class.uno]="kE[i][j] > 0">{{ kE[i][j] }}</div></td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </figure>
+    }
+  </section>
+
+  <!-- Comparación entre operadores -->
+  <section class="paso">
+    <h2><span class="num">4.</span> Comparación entre Operadores</h2>
+    <p class="guia">
+      El mismo modelo aplicado a los {{ comparativa.length }} operadores del sistema permite
+      compararlos entre sí, que es uno de los objetivos del proyecto. Ordenado por cumplimiento efectivo.
+    </p>
+    @if (cargandoComparativa) {
+      <div class="aviso-carga"><span class="spinner">⏳</span> Calculando comparativa…</div>
+    }
+    @if (comparativa.length) {
+      <div class="scrollx">
+        <table class="matriz tabla-comparativa">
+          <thead>
+            <tr>
+              <th scope="col">Operador</th>
+              <th scope="col">PDV</th>
+              <th scope="col">Planif.</th>
+              <th scope="col">Ejec.</th>
+              <th scope="col">No ejec.</th>
+              <th scope="col">Cumpl.</th>
+              <th scope="col">Efectivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of comparativa; track o.operador) {
+              <tr [class.destacado]="o.operador === reponedorSeleccionado">
+                <th scope="row">{{ o.operador }}</th>
+                <td>{{ o.nodos }}</td>
+                <td>{{ o.planificadas }}</td>
+                <td>{{ o.ejecutadas }}</td>
+                <td [style.color]="o.no_ejecutadas > 0 ? 'var(--falta)' : ''">{{ o.no_ejecutadas }}</td>
+                <td>{{ o.cumplimiento_pct | number:'1.1-1' }}%</td>
+                <td><strong>{{ o.cumplimiento_efectivo_pct | number:'1.1-1' }}%</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <!-- PASO 4: Sistema de Ecuaciones Lineales -->
+  <section class="paso">
+    <h2><span class="num">5.</span> El Álgebra Matricial como Herramienta de Resolución</h2>
+    <p class="guia">El álgebra lineal no solo describe sistemas, también los resuelve. Un sistema de ecuaciones lineales puede representar un problema de distribución de recursos, resuelto mediante la eliminación de Gauss-Jordan.</p>
+    
+    <div class="gauss-caja">
+      <div>
+        <h3>Sistema de Ecuaciones</h3>
+        <div class="controles">
+          <input type="number" [(ngModel)]="ca" (input)="reiniciarGauss()"> x +
+          <input type="number" [(ngModel)]="cb" (input)="reiniciarGauss()"> y =
+          <input type="number" [(ngModel)]="ce" (input)="reiniciarGauss()">
+        </div>
+        <div class="controles">
+          <input type="number" [(ngModel)]="cc" (input)="reiniciarGauss()"> x +
+          <input type="number" [(ngModel)]="cd" (input)="reiniciarGauss()"> y =
+          <input type="number" [(ngModel)]="cf" (input)="reiniciarGauss()">
+        </div>
+        <h3>Determinante</h3>
+        <div class="operacion" id="texDet" style="padding: 14px;"></div>
+        <div class="aviso" [hidden]="det !== 0">El determinante es cero. El sistema no tiene solución única.</div>
+      </div>
+      <div>
+        <h3>Resolución por Gauss-Jordan</h3>
+        <div class="controles">
+          <button class="btn" (click)="avanzarGauss()" [disabled]="pasoGauss >= pasosGauss.length - 1">Siguiente Operación</button>
+          <button class="btn oscuro" (click)="reiniciarGauss()">Reiniciar</button>
+        </div>
+        <div id="gauss">
+          @for (p of pasosGauss.slice(0, pasoGauss + 1); track p; let idx = $index) {
+            <div class="gauss-paso" [class.activo]="idx === pasoGauss">
+              <div class="gauss-op" [id]="'gauss-op-' + idx"></div>
+              <div class="gauss-mat" [id]="'gauss-mat-' + idx"></div>
+              @if (p.sol) {
+                <p class="gauss-sol">{{ p.sol }}</p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- Estilos específicos del componente -->
+<style>
+  .aviso-carga { background: rgba(31,82,115,0.08); border: 1px solid var(--dato); padding: 16px; margin: 20px 0; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.95rem; }
+  .spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 8px; }
+  .aviso.error { background: rgba(140,47,42,0.1); border-color: var(--falta); color: var(--falta); margin: 20px 0; }
+  .controles-principales { display: flex; flex-wrap: wrap; gap: 24px; padding: 24px; background: #fff; border: 1px solid var(--linea-fina); border-radius: 4px; margin: 24px 0; }
+  .control-grupo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 300px;}
+  .control-grupo label { font-weight: 600; color: var(--tinta); font-size: .9rem; }
+  .control-grupo select { width: 100%; }
+  .kpi-principales { gap: 32px; }
+  .formula-kpi code { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; background: rgba(31,82,115,0.07); padding: 3px 7px; border-radius: 3px; }
+  .nota-metodo { font-size: .85rem; color: var(--gris); border-left: 3px solid var(--linea); padding: 8px 12px; margin: 16px 0; background: rgba(0,0,0,0.02); }
+  .tabla-comparativa td, .tabla-comparativa th { text-align: right; white-space: nowrap; }
+  .tabla-comparativa th[scope="row"] { text-align: left; font-weight: 400; }
+  .tabla-comparativa tr.destacado { background: rgba(31,82,115,0.09); }
+  .tabla-comparativa tr.destacado th[scope="row"] { font-weight: 700; }
+  .chip-actualizando { align-self: flex-end; font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--gris); opacity: .85; }
+  .kpi-principales .indicador { background: #fff; padding: 20px; border: 1px solid var(--linea-fina); border-radius: 4px; }
+  .celda-estado { width: 24px; height: 24px; border-radius: 50%; margin: auto; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; font-weight: 600; color: #fff; }
+  .estado-no-agendado { color: var(--gris); }
+  .estado-visitada { background-color: #2E7D32; }
+  .estado-no-visitada { background-color: #C62828; }
+  .estado-incompleta { background-color: #F9A825; }
+  .estado-no-planificada { background-color: #1565C0; }
+  .estado-no-agendado { background-color: transparent; }
+  .leyenda { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: .8rem; color: var(--gris); }
+  .leyenda-item { display: flex; align-items: center; gap: 6px; }
+  .circulo { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .gauss-caja { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .gauss-sol { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--dato); }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @media (max-width: 800px) { .gauss-caja { grid-template-columns: 1fr; } }
+</style>

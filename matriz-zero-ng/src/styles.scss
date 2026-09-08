@@ -1,0 +1,619 @@
+:root {
+  --tinta: #14304A;
+  --papel: #F8F8F5;
+  --linea: #D5D6CF;
+  --linea-fina: #E4E5DF;
+  --gris: #5C6670;
+  --dato: #1F5273;
+  --falta: #8C2F2A;
+  --celda: 44px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  line-height: 1.68;
+}
+
+.envoltura {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px 160px;
+}
+
+@media (min-width: 1200px) {
+  .envoltura {
+    max-width: 1140px;
+  }
+}
+
+.portada {
+  padding: 52px 0 0;
+}
+
+.portada .institucion {
+  font-size: .92rem;
+  color: var(--gris);
+  margin: 0 0 20px;
+}
+
+.portada h1 {
+  font-size: clamp(1.6rem, 5.6vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.22;
+  margin: 0 0 10px;
+  letter-spacing: -.005em;
+  max-width: 22ch;
+}
+
+.portada .subtitulo {
+  font-size: 1.05rem;
+  color: var(--gris);
+  margin: 0 0 28px;
+  font-style: italic;
+}
+
+.ficha {
+  border-top: 1px solid var(--tinta);
+  border-bottom: 1px solid var(--linea);
+  padding: 16px 0;
+  margin: 0;
+}
+
+.ficha p {
+  margin: 0 0 8px;
+  font-size: .94rem;
+  line-height: 1.55;
+}
+
+.ficha p:last-child {
+  margin-bottom: 0;
+  color: var(--gris);
+  font-size: .88rem;
+}
+
+.ficha span {
+  display: block;
+  color: var(--gris);
+  font-size: .8rem;
+  margin-bottom: 2px;
+}
+
+.barra-modo {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 28px 0 0;
+}
+
+button {
+  font-family: inherit;
+  font-size: .95rem;
+  cursor: pointer;
+}
+
+.btn {
+  background: var(--tinta);
+  color: #fff;
+  border: 1px solid var(--tinta);
+  border-radius: 2px;
+  padding: 11px 22px;
+  line-height: 1.2;
+  min-height: 44px;
+}
+
+.btn:hover {
+  background: #1d4364;
+}
+
+.btn.claro, .btn.oscuro {
+  background: transparent;
+  color: var(--tinta);
+  border-color: var(--tinta);
+}
+
+.btn.claro:hover, .btn.oscuro:hover {
+  background: rgba(20, 48, 74, .07);
+}
+
+button:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid var(--dato);
+  outline-offset: 2px;
+}
+
+button[disabled] {
+  opacity: .35;
+  cursor: default;
+}
+
+.paso {
+  padding: 50px 0 44px;
+  border-top: 1px solid var(--linea-fina);
+}
+
+.paso:first-of-type {
+  border-top: 0;
+}
+
+.paso h2 {
+  font-size: clamp(1.25rem, 4.4vw, 1.62rem);
+  font-weight: 700;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  letter-spacing: -.005em;
+}
+
+.paso h2 .num {
+  font-weight: 400;
+  color: var(--gris);
+  flex: none;
+}
+
+.paso .guia {
+  color: var(--gris);
+  margin: 0 0 26px;
+  max-width: 68ch;
+  font-size: 1.02rem;
+}
+
+h3 {
+  font-size: 1.04rem;
+  font-weight: 600;
+  margin: 36px 0 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linea-fina);
+}
+
+h3:first-of-type {
+  margin-top: 26px;
+}
+
+.scrollx {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.tablero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+}
+
+.matriz-caja {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.matriz-caja > figcaption {
+  font-size: .9rem;
+  color: var(--gris);
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+table.matriz {
+  border-collapse: collapse;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1rem;
+}
+
+table.matriz th {
+  font-weight: 400;
+  color: var(--gris);
+  font-size: .76rem;
+  padding: 5px 6px;
+  text-align: center;
+  font-family: "Source Serif 4", serif;
+}
+
+table.matriz th[scope="row"] {
+  text-align: right;
+  padding-right: 12px;
+  white-space: nowrap;
+}
+
+table.matriz td {
+  padding: 0;
+}
+
+.celda {
+  width: var(--celda);
+  height: var(--celda);
+  border: 1px solid var(--linea);
+  background: #fff;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1rem;
+  color: #A0A6AA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.celda:hover {
+  border-color: var(--tinta);
+}
+
+.celda.uno {
+  background: rgba(31, 82, 115, .1);
+  color: var(--dato);
+  font-weight: 600;
+  border-color: rgba(31, 82, 115, .3);
+}
+
+.celda.falta {
+  background: rgba(140, 47, 42, .1);
+  color: var(--falta);
+  font-weight: 600;
+  border-color: rgba(140, 47, 42, .35);
+}
+
+.celda.eje {
+  box-shadow: inset 0 0 0 2px rgba(31, 82, 115, .4);
+}
+
+th.eje {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.vector {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .9rem;
+  margin: 16px 0 0;
+  color: var(--tinta);
+}
+
+.filas-vector {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  max-width: 480px;
+}
+
+.filas-vector li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--linea-fina);
+  font-size: .95rem;
+}
+
+.filas-vector .etq {
+  width: 78px;
+  flex: none;
+  color: var(--gris);
+}
+
+.medidor {
+  flex: 1;
+  min-width: 40px;
+  height: 7px;
+  background: #E9EAE4;
+  position: relative;
+}
+
+.medidor span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--dato);
+}
+
+.filas-vector .val {
+  font-family: "IBM Plex Mono", monospace;
+  width: 64px;
+  text-align: right;
+  flex: none;
+}
+
+.formula {
+  background: #fff;
+  border: 1px solid var(--linea-fina);
+  border-left: 3px solid var(--tinta);
+  padding: 14px 18px;
+  margin: 12px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .86rem;
+  color: var(--tinta);
+}
+
+.formula .katex {
+  font-size: 1.06em;
+}
+
+.operacion {
+  background: #fff;
+  border: 1px solid var(--linea);
+  padding: 22px 18px;
+  margin: 16px 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+.indicadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 12px;
+}
+
+.indicador {
+  flex: 1 1 260px;
+  min-width: 0;
+  border-top: 2px solid var(--tinta);
+  padding-top: 14px;
+}
+
+.indicador .cifra {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(1.9rem, 7vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1;
+  display: block;
+  margin: 6px 0;
+}
+
+.indicador .nombre {
+  font-weight: 600;
+}
+
+.indicador .detalle {
+  color: var(--gris);
+  font-size: .9rem;
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.controles label {
+  font-size: .9rem;
+  color: var(--gris);
+}
+
+select {
+  font-family: inherit;
+  font-size: .95rem;
+  padding: 10px;
+  border: 1px solid var(--linea);
+  background: #fff;
+  color: var(--tinta);
+  border-radius: 2px;
+  min-height: 44px;
+}
+
+input[type=range] {
+  accent-color: var(--dato);
+  min-width: 140px;
+  flex: 1 1 140px;
+  max-width: 260px;
+}
+
+input[type=number] {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1rem;
+  width: 64px;
+  padding: 10px 6px;
+  border: 1px solid var(--linea);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--tinta);
+  text-align: center;
+}
+
+.aviso {
+  border-left: 3px solid var(--falta);
+  background: rgba(140, 47, 42, .06);
+  padding: 12px 18px;
+  margin-top: 16px;
+  font-size: .95rem;
+}
+
+.aviso[hidden] {
+  display: none;
+}
+
+.gauss-paso {
+  margin: 18px 0;
+  padding-left: 18px;
+  border-left: 1px solid var(--linea);
+}
+
+.gauss-paso.activo {
+  border-left: 2px solid var(--tinta);
+  padding-left: 17px;
+}
+
+.gauss-op {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .84rem;
+  color: var(--gris);
+  margin-bottom: 8px;
+}
+
+.gauss-mat {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cadena {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 22px 0;
+  font-size: .93rem;
+}
+
+.cadena i {
+  font-style: normal;
+  border: 1px solid var(--linea);
+  padding: 7px 13px;
+  background: #fff;
+}
+
+.cadena i.fin {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: #fff;
+}
+
+.cadena s {
+  text-decoration: none;
+  color: var(--gris);
+}
+
+.navpaso {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--tinta);
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  z-index: 9;
+}
+
+body.presentando .navpaso {
+  display: flex;
+}
+
+body.presentando .paso {
+  display: none;
+  border-top: 0;
+}
+
+body.presentando .paso.actual {
+  display: block;
+  padding-top: 26px;
+}
+
+body.presentando .portada {
+  display: none;
+}
+
+.navpaso button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .45);
+  color: #fff;
+  border-radius: 2px;
+  padding: 10px 16px;
+  min-height: 44px;
+  font-family: inherit;
+}
+
+.navpaso button:hover {
+  background: rgba(255, 255, 255, .14);
+}
+
+.navpaso .cuenta {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .85rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  body.presentando {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .tablero {
+    gap: 28px;
+  }
+  .matriz-caja {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --celda: 38px;
+  }
+  body {
+    font-size: 17px;
+  }
+  .envoltura {
+    padding: 0 18px 150px;
+  }
+  .portada {
+    padding-top: 36px;
+  }
+  .paso {
+    padding: 38px 0 34px;
+  }
+  .navpaso .cuenta {
+    font-size: .78rem;
+  }
+  .navpaso button {
+    padding: 10px 12px;
+    font-size: .88rem;
+  }
+}
+
+@media (max-width: 380px) {
+  :root {
+    --celda: 33px;
+  }
+  .celda {
+    font-size: .9rem;
+  }
+  .filas-vector .etq {
+    width: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media print {
+  .navpaso, .barra-modo, .controles button, #btnGauss, #btnGaussReset {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    font-size: 11pt;
+  }
+  body.presentando .paso {
+    display: block !important;
+  }
+  .portada {
+    display: block !important;
+    padding-top: 0;
+  }
+  .paso {
+    page-break-inside: avoid;
+  }
+  .formula, .operacion, .celda {
+    background: #fff;
+  }
+}
