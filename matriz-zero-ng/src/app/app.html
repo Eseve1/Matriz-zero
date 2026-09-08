@@ -101,7 +101,8 @@
 
   <!-- PASO 1 (NUEVO): Resumen Gerencial y KPIs -->
   <section class="paso">
-    <h2><span class="num">1.</span> Indicadores de Cumplimiento y Cobertura</h2>
+    <h2 class="s-indicadores"><span class="num">1.</span> Indicadores de Cumplimiento y Cobertura</h2>
+    <span class="etiqueta-concepto t-verde">Indicadores de gestión</span>
 
     <p class="guia">
       Indicadores que miden la estabilidad y el funcionamiento del proceso para el reponedor y período
@@ -137,7 +138,9 @@
 
   <!-- PASO 2 (NUEVO): Desglose Matricial -->
   <section class="paso">
-    <h2><span class="num">2.</span> Desglose Matricial del Proceso</h2>
+    <h2 class="s-matrices"><span class="num">2.</span> Desglose Matricial del Proceso</h2>
+    <span class="etiqueta-concepto t-azul">Representación matricial</span>
+    <span class="etiqueta-concepto t-azul">Resta de matrices</span>
 
     <p class="guia">
       Representación visual del estado del sistema. La Matriz de Planificación (P) muestra el estado ideal, mientras que la
@@ -250,7 +253,10 @@
 
   <!-- PASO 3: Aplicaciones del Modelo -->
   <section class="paso">
-    <h2><span class="num">3.</span> Aplicaciones del Modelo Matricial</h2>
+    <h2 class="s-transformacion"><span class="num">3.</span> Aplicaciones del Modelo Matricial</h2>
+    <span class="etiqueta-concepto t-terracota">Transformación lineal</span>
+    <span class="etiqueta-concepto t-terracota">Multiplicación por escalar</span>
+    <span class="etiqueta-concepto t-terracota">Vectores</span>
 
     <p class="guia">El modelo permite aplicar transformaciones y análisis para responder a distintas preguntas de negocio sobre el mismo conjunto de datos.</p>
     
@@ -325,7 +331,8 @@
 
   <!-- Comparación entre reponedores -->
   <section class="paso">
-    <h2><span class="num">4.</span> Comparación entre Reponedores</h2>
+    <h2 class="s-comparacion"><span class="num">4.</span> Comparación entre Reponedores</h2>
+    <span class="etiqueta-concepto t-verde">Aplicación del modelo</span>
 
     <p class="guia">
       El mismo modelo aplicado a los {{ comparativa.length }} reponedores permite compararlos entre sí,
@@ -371,7 +378,10 @@
 
   <!-- PASO 4: Sistema de Ecuaciones Lineales -->
   <section class="paso">
-    <h2><span class="num">5.</span> El Álgebra Matricial como Herramienta de Resolución</h2>
+    <h2 class="s-ecuaciones"><span class="num">5.</span> El Álgebra Matricial como Herramienta de Resolución</h2>
+    <span class="etiqueta-concepto t-violeta">Sistema de ecuaciones</span>
+    <span class="etiqueta-concepto t-violeta">Operaciones elementales</span>
+    <span class="etiqueta-concepto t-violeta">Determinante</span>
 
     <p class="guia">
       El álgebra lineal no solo describe sistemas: también los resuelve. El sistema se escribe como
@@ -415,6 +425,73 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- Cierre: que se hizo y que se encontro -->
+  <section class="paso cierre">
+    <h2 class="s-cierre"><span class="num">6.</span> Qué se hizo y qué se encontró</h2>
+    <span class="etiqueta-concepto t-tinta">Resultados</span>
+
+    <p class="guia">
+      Recorrido completo del modelo, desde el registro operativo hasta la decisión de gestión.
+    </p>
+
+    <ol class="recorrido">
+      <li>
+        <b>Se tomó el registro crudo</b> de la aplicación WeTrade: 3.774 visitas de agosto de 2026,
+        con reponedor, punto de venta, día y estado de atención.
+      </li>
+      <li>
+        <b>Se transformó en matrices.</b> Cada reponedor tiene su matriz de planificación <code>P</code>
+        y su matriz de ejecución <code>E</code>: filas los puntos de venta, columnas los días.
+      </li>
+      <li>
+        <b>Se restaron.</b> <code>D = P − E</code> señala la celda exacta donde una visita
+        planificada no se ejecutó.
+      </li>
+      <li>
+        <b>Se aplicaron transformaciones lineales.</b> <code>E·1</code> da la frecuencia de atención
+        por punto de venta y <code>1ᵀ·E</code> la carga por día; <code>k·E</code> pondera los puntos
+        estratégicos.
+      </li>
+      <li>
+        <b>Se calcularon los indicadores</b> de cumplimiento y cobertura, y se aplicó el mismo modelo
+        a los 28 reponedores para compararlos entre sí.
+      </li>
+    </ol>
+
+    <h3>Los dos hallazgos</h3>
+
+    <div class="hallazgos">
+      <article class="hallazgo">
+        <p class="hallazgo-cifra">96,7% <span>→</span> 67,6%</p>
+        <p class="hallazgo-titulo">El cumplimiento real es 29 puntos menor</p>
+        <p class="hallazgo-texto">
+          Contando toda visita marcada, el cumplimiento es 96,7%. Contando solo las que además
+          alcanzaron el mínimo de minutos configurado, baja a 67,6%. Son <b>1.094 visitas</b>
+          registradas como cumplidas que duraron menos de lo necesario para hacer el trabajo.
+          El reporte plano no muestra esa diferencia; separar <code>E</code> de la ejecución
+          efectiva, sí.
+        </p>
+      </article>
+
+      <article class="hallazgo">
+        <p class="hallazgo-cifra">125</p>
+        <p class="hallazgo-titulo">Los incumplimientos se guardan sin fecha</p>
+        <p class="hallazgo-texto">
+          Las 125 visitas <em>no realizadas</em> se registran sin fecha de inicio ni de fin, porque
+          la visita nunca comenzó. Es decir: los únicos registros que representan una falla son
+          precisamente los que el sistema no ubica en el tiempo. Se detectó al construir la matriz
+          y se resolvió indexando por día de la semana.
+        </p>
+      </article>
+    </div>
+
+    <p class="guia cierre-final">
+      El álgebra lineal no está usada como ilustración: la resta de matrices es la operación que
+      produce el primer hallazgo, y la necesidad de que <code>P</code> y <code>E</code> compartan
+      dimensiones es la que reveló el segundo.
+    </p>
   </section>
 </div>
 

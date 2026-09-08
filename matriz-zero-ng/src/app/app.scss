@@ -225,3 +225,100 @@
   font-size: .82rem;
   color: var(--gris);
 }
+
+/* --- Sistema de color por concepto ---
+   Cada seccion lleva una etiqueta con la operacion de algebra que demuestra. El
+   color no decora: agrupa. Tonos apagados para que siga leyendose academico. */
+:host {
+  --c-verde:     #2E6B4F;
+  --c-azul:      #1F5273;
+  --c-terracota: #B0632F;
+  --c-violeta:   #63498A;
+}
+
+.etiqueta-concepto {
+  display: inline-block;
+  margin: 0 6px 14px 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .71rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  border: 1px solid;
+
+  &.t-verde     { color: var(--c-verde);     border-color: rgba(46,107,79,.35);  background: rgba(46,107,79,.07); }
+  &.t-azul      { color: var(--c-azul);      border-color: rgba(31,82,115,.35);  background: rgba(31,82,115,.07); }
+  &.t-terracota { color: var(--c-terracota); border-color: rgba(176,99,47,.35);  background: rgba(176,99,47,.08); }
+  &.t-violeta   { color: var(--c-violeta);   border-color: rgba(99,73,138,.35);  background: rgba(99,73,138,.07); }
+  &.t-tinta     { color: var(--papel);       border-color: var(--tinta);         background: var(--tinta); }
+}
+
+/* El numero de seccion toma el color de su concepto. */
+.s-indicadores  .num { color: var(--c-verde); }
+.s-matrices     .num { color: var(--c-azul); }
+.s-transformacion .num { color: var(--c-terracota); }
+.s-comparacion  .num { color: var(--c-verde); }
+.s-ecuaciones   .num { color: var(--c-violeta); }
+.s-cierre       .num { color: var(--tinta); }
+
+/* --- Cierre --- */
+.recorrido {
+  margin: 18px 0 0;
+  padding-left: 22px;
+
+  li { margin-bottom: 12px; }
+  b { font-weight: 600; }
+  code { font-family: "IBM Plex Mono", monospace; font-size: .92em;
+         background: rgba(31,82,115,.08); padding: 1px 5px; border-radius: 3px; }
+}
+
+.hallazgos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.hallazgo {
+  border: 1px solid var(--linea);
+  border-top: 3px solid var(--c-terracota);
+  border-radius: 5px;
+  padding: 18px 20px;
+  background: #fff;
+
+  &:last-child { border-top-color: var(--c-violeta); }
+}
+
+.hallazgo-cifra {
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+
+  span { color: var(--gris); font-weight: 400; margin: 0 4px; }
+}
+
+.hallazgo-titulo {
+  margin: 8px 0 6px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.hallazgo-texto {
+  margin: 0;
+  font-size: .9rem;
+  color: var(--gris);
+  line-height: 1.6;
+
+  b { color: var(--tinta); }
+  code { font-family: "IBM Plex Mono", monospace; }
+}
+
+.cierre-final {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linea-fina);
+}
