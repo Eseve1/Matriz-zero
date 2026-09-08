@@ -1,56 +1,114 @@
 {
-  "hosting": {
-    "public": "dist/matriz-zero-ng/browser",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "//": "Nada de HTML se cachea. Las reglas se evaluan contra la URL pedida, no contra el destino del rewrite: por eso hace falta cubrir '/', '/index.html' y '**' por separado. Sin esto, tras un redespliegue el navegador sigue pidiendo el bundle anterior hasta por una hora.",
-        "source": "/",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
-        "source": "/index.html",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
-        "//": "Los bundles llevan hash en el nombre, asi que se pueden cachear indefinidamente.",
-        "source": "**/*.@(js|css|woff2)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
-          }
-        ]
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "public": "dist/matriz-zero-ng/browser",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "//": "Nada de HTML se cachea. Las reglas se evaluan contra la URL pedida, no contra el destino del rewrite: por eso hace falta cubrir '/', '/index.html' y '**' por separado. Sin esto, tras un redespliegue el navegador sigue pidiendo el bundle anterior hasta por una hora.",
+          "source": "/",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/index.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "//": "Los bundles llevan hash en el nombre, asi que se pueden cachear indefinidamente.",
+          "source": "**/*.@(js|css|woff2)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            }
+          ]
+        }
+      ],
+      "site": "matriz-zero"
+    },
+    {
+      "public": "dist/matriz-zero-ng/browser",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "//": "Nada de HTML se cachea. Las reglas se evaluan contra la URL pedida, no contra el destino del rewrite: por eso hace falta cubrir '/', '/index.html' y '**' por separado. Sin esto, tras un redespliegue el navegador sigue pidiendo el bundle anterior hasta por una hora.",
+          "source": "/",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/index.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "//": "Los bundles llevan hash en el nombre, asi que se pueden cachear indefinidamente.",
+          "source": "**/*.@(js|css|woff2)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            }
+          ]
+        }
+      ],
+      "site": "eddy-sandbox-2026"
+    }
+  ]
 }

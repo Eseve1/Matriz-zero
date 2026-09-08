@@ -1,0 +1,95 @@
+// Estilos del componente. Angular los encapsula, por eso tienen precedencia
+// sobre las reglas globales de styles.scss aunque el selector sea igual de simple.
+
+  .aviso-carga { background: rgba(31,82,115,0.08); border: 1px solid var(--dato); padding: 16px; margin: 20px 0; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.95rem; }
+.spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 8px; }
+.aviso.error { background: rgba(140,47,42,0.1); border-color: var(--falta); color: var(--falta); margin: 20px 0; }
+.controles-principales { display: flex; flex-wrap: wrap; gap: 24px; padding: 24px; background: #fff; border: 1px solid var(--linea-fina); border-radius: 4px; margin: 24px 0; }
+.control-grupo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 300px;}
+.control-grupo label { font-weight: 600; color: var(--tinta); font-size: .9rem; }
+.control-grupo select { width: 100%; }
+.formula-kpi code { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; background: rgba(31,82,115,0.07); padding: 3px 7px; border-radius: 3px; }
+.nota-metodo { font-size: .85rem; color: var(--gris); border-left: 3px solid var(--linea); padding: 8px 12px; margin: 16px 0; background: rgba(0,0,0,0.02); }
+.tabla-comparativa td, .tabla-comparativa th { text-align: right; white-space: nowrap; }
+.tabla-comparativa th[scope="row"] { text-align: left; font-weight: 400; }
+.tabla-comparativa tbody tr:nth-child(even) { background: rgba(0,0,0,.018); }
+.tabla-comparativa tbody tr:hover { background: rgba(31,82,115,.06); }
+.tabla-comparativa tr.destacado { background: rgba(31,82,115,0.10) !important; }
+.tabla-comparativa td, .tabla-comparativa th[scope="row"] { padding: 7px 12px; font-variant-numeric: tabular-nums; }
+.tabla-comparativa thead th { border-bottom: 1px solid var(--linea); }
+.barra-cump { display: inline-block; vertical-align: middle; width: 44px; height: 6px; border-radius: 3px;
+  background: var(--linea-fina); margin-right: 8px; overflow: hidden; }
+.barra-cump > span { display: block; height: 100%; background: var(--dato); }
+.tabla-comparativa tr.destacado th[scope="row"] { font-weight: 700; }
+.chip-actualizando { align-self: flex-end; font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--gris); opacity: .85; }
+/* Franja de KPIs compacta: una sola caja dividida, etiqueta chica arriba y cifra
+   grande. Se usa .indicadores.kpi-principales para ganarle al display:flex global. */
+.indicadores.kpi-principales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  margin-top: 14px;
+}
+.indicadores.kpi-principales .indicador {
+  flex: none;
+  border-top: 0;
+  border-right: 1px solid var(--linea-fina);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.indicadores.kpi-principales .indicador:last-child { border-right: 0; }
+.indicadores.kpi-principales .nombre {
+  font-size: .71rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--gris);
+}
+.indicadores.kpi-principales .cifra {
+  font-size: clamp(1.6rem, 3.6vw, 2rem); margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.indicadores.kpi-principales .detalle { font-size: .79rem; line-height: 1.4; }
+/* Celdas de estado: cuadrado teñido con el valor adentro. El número manda y el color
+   acompaña, para que la resta D = P - E se pueda verificar leyendo la tabla. */
+.celda-estado { font-weight: 600; }
+.estado-visitada        { background: rgba(46,125,50,.14);  border-color: rgba(46,125,50,.45);  color: #1B5E20; }
+.estado-no-visitada     { background: rgba(198,40,40,.13);  border-color: rgba(198,40,40,.45);  color: #B71C1C; }
+.estado-incompleta      { background: rgba(249,168,37,.22); border-color: rgba(191,124,0,.45);  color: #8A5A00; }
+.estado-no-planificada  { background: rgba(21,101,192,.13); border-color: rgba(21,101,192,.45); color: #0D47A1; }
+.estado-no-agendado     { background: repeating-linear-gradient(135deg, transparent, transparent 5px, rgba(0,0,0,.05) 5px, rgba(0,0,0,.05) 6px); border-color: var(--linea-fina); color: #B6BBBE; font-weight: 400; }
+
+.leyenda { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: .78rem; color: var(--gris); }
+.leyenda-item { display: flex; align-items: center; gap: 7px; }
+.circulo { width: 13px; height: 13px; border-radius: 3px; display: inline-block; border: 1px solid; }
+
+/* Columna de etiquetas fija: los nombres largos no empujan la cuadrícula. */
+.matriz-grid .col-fija { position: sticky; left: 0; z-index: 2; background: var(--papel);
+  max-width: 185px; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 1px 0 0 var(--linea-fina); }
+.matriz-grid th[scope="row"] { font-size: .78rem; }
+
+/* Fila y columna Σ: el vector del modelo, dibujado en el borde de la matriz. */
+.matriz-grid .col-sigma { color: var(--tinta); font-weight: 700; }
+.celda-sigma { background: transparent; border-color: transparent;
+  border-left: 1px solid var(--linea); color: var(--tinta); font-weight: 600; }
+.matriz-grid tfoot .celda-sigma { border-left-color: transparent; border-top: 1px solid var(--linea); }
+.celda-sigma-total { border-left: 1px solid var(--linea); border-top: 1px solid var(--linea);
+  background: rgba(31,82,115,.06); }
+.gauss-caja { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.gauss-sol { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--dato); }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@media (max-width: 800px) { .gauss-caja { grid-template-columns: 1fr; } }
+
+/* Bajada de portada: el reto de la competencia, subordinado al título del documento. */
+.subtitulo .reto {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: .92rem;
+  color: var(--gris);
+  font-style: italic;
+  max-width: 60ch;
+}

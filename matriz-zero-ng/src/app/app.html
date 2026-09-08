@@ -1,18 +1,28 @@
 <!--
-  Este archivo ha sido reestructurado para seguir una narrativa más impactante:
-  1. Resumen Gerencial (KPIs) primero.
-  2. Evidencia y Desglose (Matrices) después.
-  3. Aplicaciones matemáticas avanzadas al final.
+  Narrativa de la pantalla:
+  1. Indicadores de estabilidad (KPIs) con su fórmula.
+  2. Desglose matricial: P, E y la brecha D = P - E.
+  3. Aplicaciones del modelo: vectores, ponderación por escalar.
+  4. Comparación entre operadores.
+  5. Sistema de ecuaciones por Gauss-Jordan.
+
+  Los títulos siguen la carátula del documento entregado, para que el docente
+  encuentre en pantalla el mismo nombre que leyó en el informe.
 -->
 
-<!-- Header de Portada (Oculto en modo presentación) -->
+<!-- Portada -->
 <header class="portada">
   <div class="envoltura">
     <p class="institucion">Universidad UCATEC · Álgebra Lineal y Matricial · Competencia 2026</p>
-    <h1>Análisis Matricial de un Proceso Industrial Automatizado</h1>
-    <p class="subtitulo">Caso de Estudio: Sistema de Control de Trade Marketing (Industrias Venado S.A.)</p>
+    <h1>Modelo Matricial de Control de Atención de Puntos de Venta</h1>
+    <p class="subtitulo">
+      Industrias Venado S.A. · Área de Trade Marketing · Registros de la aplicación WeTrade<br>
+      <span class="reto">Reto: representar el comportamiento de un proceso mediante transformaciones
+      lineales y análisis matricial para evaluar su estabilidad y funcionamiento.</span>
+    </p>
     <div class="ficha">
       <p><span>Estudiantes</span>Aranibar Rivera José Fernando · Huanca Cayo Nobelia Jhannel · Severiche Socore Edilberto · Rasguido Martínez Jhosselyn</p>
+      <p><span>Grupo</span>Matriz Zero</p>
       <p><span>Docente</span>Diego Rodrigo Flores Alfaro</p>
       <p style="color: var(--dato); font-weight: 600;">Implementación: Modelo matemático en vivo conectado a datos reales vía API RESTful (GCP).</p>
     </div>
@@ -108,27 +118,38 @@
         <figure class="matriz-caja" style="margin:0">
           <figcaption>Matriz P — Planificación (Estado Ideal)</figcaption>
           <div class="scrollx">
-            <table class="matriz">
+            <table class="matriz matriz-grid">
               <thead>
                 <tr>
-                  <th></th>
+                  <th class="col-fija"></th>
                   @for (dia of DIAS; track dia) {
                     <th scope="col">{{ dia.substring(0, 3) }}</th>
                   }
+                  <th scope="col" class="col-sigma">Σ</th>
                 </tr>
               </thead>
               <tbody>
                 @for (cliente of PDV; track cliente; let i = $index) {
                   <tr>
-                    <th scope="row">{{ cliente }}</th>
+                    <th scope="row" class="col-fija" [title]="cliente">{{ cliente }}</th>
                     @for (dia of DIAS; track dia; let j = $index) {
                       <td>
                         <div class="celda" [class.uno]="P[i][j] === 1">{{ P[i][j] }}</div>
                       </td>
                     }
+                    <td><div class="celda celda-sigma">{{ vfP[i] }}</div></td>
                   </tr>
                 }
               </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row" class="col-fija">Σ</th>
+                  @for (dia of DIAS; track dia; let j = $index) {
+                    <td><div class="celda celda-sigma">{{ vcP[j] }}</div></td>
+                  }
+                  <td><div class="celda celda-sigma celda-sigma-total">{{ totalP }}</div></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </figure>
@@ -136,28 +157,39 @@
         <figure class="matriz-caja" style="margin:0">
           <figcaption>Matriz E — Ejecución (Estado Real Observado)</figcaption>
           <div class="scrollx">
-            <table class="matriz">
+            <table class="matriz matriz-grid">
               <thead>
                 <tr>
-                  <th></th>
+                  <th class="col-fija"></th>
                   @for (dia of DIAS; track dia) {
                     <th scope="col">{{ dia.substring(0, 3) }}</th>
                   }
+                  <th scope="col" class="col-sigma">Σ</th>
                 </tr>
               </thead>
               <tbody>
                 @for (cliente of PDV; track cliente; let i = $index) {
                   <tr>
-                    <th scope="row">{{ cliente }}</th>
+                    <th scope="row" class="col-fija" [title]="cliente">{{ cliente }}</th>
                     @for (dia of DIAS; track dia; let j = $index) {
                       <td>
-                        <div class="celda-estado" [ngClass]="getClaseEstado(E_estado[i][j])"
+                        <div class="celda celda-estado" [ngClass]="getClaseEstado(E_estado[i][j])"
                              [title]="E_estado[i][j]">{{ E[i][j] }}</div>
                       </td>
                     }
+                    <td><div class="celda celda-sigma">{{ vf[i] }}</div></td>
                   </tr>
                 }
               </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row" class="col-fija">Σ</th>
+                  @for (dia of DIAS; track dia; let j = $index) {
+                    <td><div class="celda celda-sigma">{{ vc[j] }}</div></td>
+                  }
+                  <td><div class="celda celda-sigma celda-sigma-total">{{ totalE }}</div></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
           <div class="leyenda">
@@ -280,7 +312,10 @@
                 <td>{{ o.ejecutadas }}</td>
                 <td [style.color]="o.no_ejecutadas > 0 ? 'var(--falta)' : ''">{{ o.no_ejecutadas }}</td>
                 <td>{{ o.cumplimiento_pct | number:'1.1-1' }}%</td>
-                <td><strong>{{ o.cumplimiento_efectivo_pct | number:'1.1-1' }}%</strong></td>
+                <td>
+                  <span class="barra-cump"><span [style.width.%]="o.cumplimiento_efectivo_pct"></span></span>
+                  <strong>{{ o.cumplimiento_efectivo_pct | number:'1.1-1' }}%</strong>
+                </td>
               </tr>
             }
           </tbody>
@@ -334,36 +369,3 @@
 </div>
 
 
-<!-- Estilos específicos del componente -->
-<style>
-  .aviso-carga { background: rgba(31,82,115,0.08); border: 1px solid var(--dato); padding: 16px; margin: 20px 0; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.95rem; }
-  .spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 8px; }
-  .aviso.error { background: rgba(140,47,42,0.1); border-color: var(--falta); color: var(--falta); margin: 20px 0; }
-  .controles-principales { display: flex; flex-wrap: wrap; gap: 24px; padding: 24px; background: #fff; border: 1px solid var(--linea-fina); border-radius: 4px; margin: 24px 0; }
-  .control-grupo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 300px;}
-  .control-grupo label { font-weight: 600; color: var(--tinta); font-size: .9rem; }
-  .control-grupo select { width: 100%; }
-  .kpi-principales { gap: 32px; }
-  .formula-kpi code { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; background: rgba(31,82,115,0.07); padding: 3px 7px; border-radius: 3px; }
-  .nota-metodo { font-size: .85rem; color: var(--gris); border-left: 3px solid var(--linea); padding: 8px 12px; margin: 16px 0; background: rgba(0,0,0,0.02); }
-  .tabla-comparativa td, .tabla-comparativa th { text-align: right; white-space: nowrap; }
-  .tabla-comparativa th[scope="row"] { text-align: left; font-weight: 400; }
-  .tabla-comparativa tr.destacado { background: rgba(31,82,115,0.09); }
-  .tabla-comparativa tr.destacado th[scope="row"] { font-weight: 700; }
-  .chip-actualizando { align-self: flex-end; font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--gris); opacity: .85; }
-  .kpi-principales .indicador { background: #fff; padding: 20px; border: 1px solid var(--linea-fina); border-radius: 4px; }
-  .celda-estado { width: 24px; height: 24px; border-radius: 50%; margin: auto; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; font-weight: 600; color: #fff; }
-  .estado-no-agendado { color: var(--gris); }
-  .estado-visitada { background-color: #2E7D32; }
-  .estado-no-visitada { background-color: #C62828; }
-  .estado-incompleta { background-color: #F9A825; }
-  .estado-no-planificada { background-color: #1565C0; }
-  .estado-no-agendado { background-color: transparent; }
-  .leyenda { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: .8rem; color: var(--gris); }
-  .leyenda-item { display: flex; align-items: center; gap: 6px; }
-  .circulo { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .gauss-caja { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-  .gauss-sol { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--dato); }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  @media (max-width: 800px) { .gauss-caja { grid-template-columns: 1fr; } }
-</style>

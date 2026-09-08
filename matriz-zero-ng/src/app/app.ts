@@ -53,6 +53,7 @@ interface MatrizResponse {
   standalone: true,
   imports: [CommonModule, FormsModule, NgClass],
   templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
@@ -92,7 +93,11 @@ export class App implements OnInit {
   nF = 0; nC = 0; // Dimensiones
 
   // --- Resultados del Análisis ---
+  // Vectores de E (ejecución) y de P (planificación): suma por fila y por columna.
+  // Se muestran como columna y fila Σ en el borde de cada matriz.
   vf: number[] = []; vc: number[] = [];
+  vfP: number[] = []; vcP: number[] = [];
+  totalE = 0; totalP = 0;
   totalPlanificadas = 0; totalEjecutadas = 0;
   totalPdvPlanificados = 0; totalPdvAtendidos = 0;
   cump = 0; cob = 0; perdidas = 0;
@@ -246,8 +251,14 @@ export class App implements OnInit {
     this.perdidas = this.D.reduce((sum, fila) => sum + fila.filter(v => v > 0).length, 0);
 
     // 2. Vectores: por fila = frecuencia por punto de venta, por columna = por día.
-    this.vf = this.E.map(fila => fila.reduce((a, b) => a + b, 0));
-    this.vc = this.DIAS.map((_, j) => this.E.reduce((sum, fila) => sum + (fila[j] || 0), 0));
+    const sumaFilas = (m: number[][]) => m.map(f => f.reduce((a, b) => a + b, 0));
+    const sumaCols = (m: number[][]) => this.DIAS.map((_, j) => m.reduce((s, f) => s + (f[j] || 0), 0));
+    this.vf = sumaFilas(this.E);
+    this.vc = sumaCols(this.E);
+    this.vfP = sumaFilas(this.P);
+    this.vcP = sumaCols(this.P);
+    this.totalE = this.vf.reduce((a, b) => a + b, 0);
+    this.totalP = this.vfP.reduce((a, b) => a + b, 0);
 
     // 3. Transformación lineal: ponderación por escalar k*E
     this.kE = this.E.map(fila => fila.map(v => +(v * this.k).toFixed(2)));
@@ -304,7 +315,9 @@ export class App implements OnInit {
 
   private limpiarDatos() {
     this.P = []; this.E = []; this.E_estado = []; this.D = []; this.PDV = [];
-    this.nF = 0; this.nC = 0; this.vf = []; this.vc = [];
+    this.nF = 0; this.nC = 0;
+    this.vf = []; this.vc = []; this.vfP = []; this.vcP = [];
+    this.totalE = 0; this.totalP = 0; this.kE = [];
   }
   
   reiniciarGauss() { this.pasoGauss = 0; this.construirGauss(); }
