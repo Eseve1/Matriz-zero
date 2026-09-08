@@ -294,7 +294,9 @@ export class App implements OnInit {
   construirGauss() {
     this.det = this.ca * this.cd - this.cb * this.cc;
     const { ca: a, cb: b, ce: e, cc: c, cd: d, cf: f } = this;
-    this.pasosGauss = [{ op: 'Matriz ampliada del sistema', m: [[a, b, e], [c, d, f]] }];
+    // El rotulo va dentro de \text{}: KaTeX lo interpreta como formula y en modo
+    // matematico los espacios se pierden, dejando las palabras pegadas.
+    this.pasosGauss = [{ op: '\\text{Matriz ampliada del sistema}', m: [[a, b, e], [c, d, f]] }];
     if (this.det !== 0 && a !== 0) {
       let m = [[1, b / a, e / a], [c, d, f]];
       this.pasosGauss.push({ op: `F_1 \\to \\frac{1}{${a}}F_1`, m: m.map(r => r.slice()) });

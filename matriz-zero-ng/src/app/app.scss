@@ -322,3 +322,17 @@
   padding-top: 16px;
   border-top: 1px solid var(--linea-fina);
 }
+
+/* Aviso de origen: el resto de la pantalla sale de BigQuery, esta seccion no.
+   Decirlo evita que alguien tome el ejemplo del informe como si fuera un dato. */
+.aclaracion-origen {
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border-left: 3px solid var(--c-violeta);
+  background: rgba(99, 73, 138, .05);
+  font-size: .85rem;
+  line-height: 1.55;
+  color: var(--gris);
+
+  strong { color: var(--tinta); }
+}
