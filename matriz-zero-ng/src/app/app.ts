@@ -363,6 +363,11 @@ export class App implements OnInit {
       if (el) try { katex.render(formula, el, { throwOnError: false, displayMode: true }); } catch (e) { el.textContent = formula; }
     };
     render('texResta', `D = P - E = ${this.mtx(this.P)} - ${this.mtx(this.E)} = ${this.mtx(this.D)}`);
+    // La suma por filas es el producto de E por el vector de unos: deja a la vista
+    // que la columna Sigma de la matriz es una transformacion lineal, no un total suelto.
+    const unos = this.DIAS.map(() => [1]);
+    render('texVectores',
+      `E \\cdot \\mathbf{1} = ${this.mtx(this.E)} ${this.mtx(unos)} = ${this.mtx(this.vf.map(v => [v]))}`);
     render('formEscalar', `k E \\quad \\text{con} \\quad k = ${this.k}, \\quad \\sum k E = ${(this.totalEjecutadas * this.k).toFixed(1)}`);
   }
 

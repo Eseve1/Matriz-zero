@@ -254,8 +254,14 @@
 
     <p class="guia">El modelo permite aplicar transformaciones y análisis para responder a distintas preguntas de negocio sobre el mismo conjunto de datos.</p>
     
-    <h3>Análisis Vectorial de Funcionamiento</h3>
-    <p class="guia">Agrupar por filas muestra la frecuencia de atención de cada punto de venta. Agrupar por columnas muestra cómo se comporta el proceso a lo largo de la semana.</p>
+    <h3>Análisis Vectorial: la matriz como transformación lineal</h3>
+    <p class="guia">
+      Sumar por filas no es solo agrupar: es <strong>aplicar la matriz al vector de unos</strong>.
+      El resultado <code>E·1</code> es la frecuencia de atención de cada punto de venta, y
+      <code>1ᵀ·E</code> es la carga de cada día. Ambas son transformaciones lineales, y son
+      exactamente los números de la columna y la fila Σ que bordean la matriz de arriba.
+    </p>
+    <div class="operacion" id="texVectores"></div>
     <div class="tablero">
         <div class="matriz-caja">
           <ul class="filas-vector">
@@ -281,7 +287,7 @@
         </div>
     </div>
     
-    <h3>Ponderación Estratégica (Transformación Lineal)</h3>
+    <h3>Ponderación por Escalar</h3>
     <p class="guia">Multiplicar la matriz de ejecución por un escalar <code>k</code> permite ponderar el resultado: sirve para dar más peso a las visitas en puntos de venta estratégicos o de mayor volumen.</p>
     <div class="controles">
       <label for="escalar">Valor del escalar k:</label>
